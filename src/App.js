@@ -1,25 +1,25 @@
-import logo from './logo.svg';
-import './App.css';
+import React, { useRef } from 'react';
+import { AppContextProvider } from './AppContext';
+import Toolbar from './Components/Toolbar';
+import MoleculeDrawingView from './Components/MoleculeDrawingView';
+import MoleculeSimulationView from './Components/MoleculeSimulationView';
+import './App.css'
+import Solution from './Object Model/Solution.js';
 
 function App() {
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
-  );
+      const solutionRef = useRef(new Solution());
+
+	return (
+            <AppContextProvider>
+                  <div className='app'>
+                        <Toolbar/>
+                        <div className='molecule-viewer-flex'>
+                              <MoleculeDrawingView solution={solutionRef.current}/>
+                              <MoleculeSimulationView solution={solutionRef.current}/>
+                        </div>
+                  </div>
+            </AppContextProvider>
+  	);
 }
 
 export default App;

@@ -1,0 +1,13 @@
+.toolbar {
+    display: flex;
+    margin: 5px;
+}
+
+.toolbar .label {
+    margin-right: 10px;
+    font-size: 25px;
+}
+
+.toolbar .combo-box {
+    width: 250px;
+}
