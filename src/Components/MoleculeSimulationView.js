@@ -1,6 +1,6 @@
 import React, { useRef, useEffect } from 'react';
 import * as THREE from 'three';
-import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
+import { OrbitControls } from 'three/addons/controls/OrbitControls';
 import GraphicsContainer from './GraphicsContainer';
 
 function MoleculeSimulationView({ solution }) {
@@ -19,6 +19,7 @@ function MoleculeSimulationView({ solution }) {
 
     controls.enableDamping = true;
     controls.dampingFactor = 0.05;
+    controls.update();
 
     const clearScene = () => {
       while(scene.children.length > 0){ 
@@ -45,7 +46,7 @@ function MoleculeSimulationView({ solution }) {
         
       const radius = 0.1 + 0.2 * atomicRadius;
       const geometry = new THREE.SphereGeometry(radius);
-      const material = new THREE.MeshBasicMaterial({ color: color, wireframe: true})
+      const material = new THREE.MeshBasicMaterial({ color: color, wireframe: true })
       const sphere = new THREE.Mesh(geometry, material);
       
       const scale = 6;
@@ -75,12 +76,8 @@ function MoleculeSimulationView({ solution }) {
   }, [solution]);
 
   const onResize = (width, height) => {
-    const camera = cameraRef.current;
     const renderer = rendererRef.current;
-    
     renderer.setSize(width, height);
-    camera.aspect = width / height;
-    camera.updateProjectionMatrix();
   }
 
   return <GraphicsContainer renderer={rendererRef.current} onResize={onResize}/>;

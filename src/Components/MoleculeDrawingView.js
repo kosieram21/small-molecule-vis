@@ -8,10 +8,13 @@ import Atom from '../Object Model/Atom.js';
 function MoleculeDrawingView({ solution }) {
     const { selectedElement } = useAppContext();
     const selectedElementRef = useRef(selectedElement);
-    const twoRef = useRef(new Two()); 
+    const twoRef = useRef(new Two());
 
     useEffect(() => {
         const two = twoRef.current;
+
+        let panning = false;
+        let prevX, prevY;
 
         const renderAtom = (atom) => {
             const [x, y] = atom.getPosition();
@@ -24,9 +27,10 @@ function MoleculeDrawingView({ solution }) {
             const canvasY = y * rect.height;
     
             const radius = 10 + (20 * atomicRadius);
-            const circle = two.makeCircle(canvasX, canvasY, radius);
+            const circle = new Two.Circle(canvasX, canvasY, radius);
             circle.fill = color;
             circle.noStroke();
+            two.add(circle);
     
             const text = new Two.Text(symbol, canvasX, canvasY);
             text.fill = 'black';
@@ -47,8 +51,10 @@ function MoleculeDrawingView({ solution }) {
                     const rect = two.renderer.domElement.getBoundingClientRect();
                     const normalizedX = (event.clientX - rect.left) / rect.width;
                     const normalizedY = (event.clientY - rect.top) / rect.height;
+                    const solutionX = (normalizedX - two.scene.translation.x / rect.width) / two.scene.scale;
+                    const solutionY = (normalizedY - two.scene.translation.y / rect.height) / two.scene.scale;
                     const element = periodicTable.getElement(selectedElementRef.current.value);
-                    solution.addAtom(new Atom([normalizedX, normalizedY, 0], 
+                    solution.addAtom(new Atom([solutionX, solutionY, 0], 
                         element.getSymbol(), 
                         element.getAtomicNumber(),
                         element.getAtomicRadius()));
@@ -56,15 +62,65 @@ function MoleculeDrawingView({ solution }) {
             });
         };
 
+        const onScroll = (event) => {
+            event.preventDefault();
+            two.scene.scale += 
+                event.deltaY > 0 ? -0.05 : 
+                event.deltaY < 0 ? 0.05 : 0;
+        };
+
+        const onMouseDown = (event) => {
+            if (event.button === 2) {
+                event.preventDefault();
+                panning = true;
+                prevX = event.clientX;
+                prevY = event.clientY;
+            }
+        };
+
+        const onMouseUp = (event) => {
+            if (event.button === 2) {
+                panning = false;
+            }
+        };
+
+        const onMouseMove = (event) => {
+            if (panning) {
+                const dx = (event.clientX - prevX) / two.scene.scale;
+                const dy = (event.clientY - prevY) / two.scene.scale;
+                two.scene.translation.set(two.scene.translation.x + dx, two.scene.translation.y + dy);
+    
+                prevX = event.clientX;
+                prevY = event.clientY;
+            }
+        }
+
+        const onContextMenu = (event) => {
+            event.preventDefault();
+        };
+
         two.bind('update', update);
         two.play();
+
         two.renderer.domElement.addEventListener('click', onClick);
+        two.renderer.domElement.addEventListener('wheel', onScroll);
+        two.renderer.domElement.addEventListener('mousedown', onMouseDown);
+        two.renderer.domElement.addEventListener('mouseup', onMouseUp);
+        two.renderer.domElement.addEventListener('mousemove', onMouseMove);
+        two.renderer.domElement.addEventListener('contextmenu', onContextMenu);
+
 
         return () => {
             two.pause();
             two.unbind('update', update)
             two.clear();
+            
             two.renderer.domElement.removeEventListener('click', onClick);
+            two.renderer.domElement.removeEventListener('wheel', onScroll);
+            two.renderer.domElement.removeEventListener('mousedown', onMouseDown);
+            two.renderer.domElement.removeEventListener('mouseup', onMouseUp);
+            two.renderer.domElement.removeEventListener('mousemove', onMouseMove);
+            two.renderer.domElement.removeEventListener('contextmenu', onContextMenu);
         };
     }, [solution]);
 
@@ -74,7 +130,6 @@ function MoleculeDrawingView({ solution }) {
 
     const onResize = (width, height) => {
         const two = twoRef.current;
-
         two.width = width;
         two.height = height;
     }
