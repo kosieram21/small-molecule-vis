@@ -17,16 +17,22 @@ function MoleculeDrawingView({ solution }) {
             const [x, y] = atom.getPosition();
             const symbol = atom.getSymbol();
             const color = atom.getColor();
+            const atomicRadius = atom.getAtomicRadius();
+
+            const rect = two.renderer.domElement.getBoundingClientRect();
+            const canvasX = x * rect.width;
+            const canvasY = y * rect.height;
     
-            const circle = two.makeCircle(x, y, 25);
+            const radius = 10 + (20 * atomicRadius);
+            const circle = two.makeCircle(canvasX, canvasY, radius);
             circle.fill = color;
             circle.noStroke();
     
-            const text = new Two.Text(symbol, x, y);
+            const text = new Two.Text(symbol, canvasX, canvasY);
             text.fill = 'black';
             text.alignment = 'center';
             text.baseline = 'middle';
-            text.size = 14;
+            text.size = radius;
             two.add(text);
         };
     
@@ -39,10 +45,13 @@ function MoleculeDrawingView({ solution }) {
             PeriodicTable.load().then(periodicTable => {
                 if (selectedElementRef.current.value) {
                     const rect = two.renderer.domElement.getBoundingClientRect();
-                    const mouseX = event.clientX - rect.left;
-                    const mouseY = event.clientY - rect.top;
+                    const normalizedX = (event.clientX - rect.left) / rect.width;
+                    const normalizedY = (event.clientY - rect.top) / rect.height;
                     const element = periodicTable.getElement(selectedElementRef.current.value);
-                    solution.addAtom(new Atom([mouseX, mouseY, 0], element.getSymbol(), element.getAtomicNumber()));
+                    solution.addAtom(new Atom([normalizedX, normalizedY, 0], 
+                        element.getSymbol(), 
+                        element.getAtomicNumber(),
+                        element.getAtomicRadius()));
                 }
             });
         };

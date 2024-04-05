@@ -22,6 +22,10 @@ class Element {
     getAtomicNumber() {
         return this.#metadata.AtomicNumber;
     }
+
+    getAtomicRadius() {
+        return this.#metadata.AtomicRadius;
+    }
 }
 
 class PeriodicTable {
