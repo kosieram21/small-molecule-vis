@@ -105,10 +105,10 @@ function MoleculeDrawingView({ solution }) {
         two.renderer.domElement.addEventListener('click', onClick);
         two.renderer.domElement.addEventListener('wheel', onScroll);
         two.renderer.domElement.addEventListener('mousedown', onMouseDown);
-        two.renderer.domElement.addEventListener('mouseup', onMouseUp);
         two.renderer.domElement.addEventListener('mousemove', onMouseMove);
         two.renderer.domElement.addEventListener('contextmenu', onContextMenu);
 
+        window.addEventListener('mouseup', onMouseUp);
 
         return () => {
             two.pause();
@@ -118,9 +118,10 @@ function MoleculeDrawingView({ solution }) {
             two.renderer.domElement.removeEventListener('click', onClick);
             two.renderer.domElement.removeEventListener('wheel', onScroll);
             two.renderer.domElement.removeEventListener('mousedown', onMouseDown);
-            two.renderer.domElement.removeEventListener('mouseup', onMouseUp);
             two.renderer.domElement.removeEventListener('mousemove', onMouseMove);
             two.renderer.domElement.removeEventListener('contextmenu', onContextMenu);
+
+            window.removeEventListener('mouseup', onMouseUp);
         };
     }, [solution]);
 
