@@ -13,13 +13,13 @@ function MoleculeSimulationView({ solution }) {
     const scene = sceneRef.current;
     const camera = cameraRef.current;
     const renderer = rendererRef.current;
-    const controls = controlsRef.current;
+    //const controls = controlsRef.current;
 
     camera.position.set(0, 0, 5);
 
-    controls.enableDamping = true;
-    controls.dampingFactor = 0.05;
-    controls.update();
+    //controls.enableDamping = true;
+    //controls.dampingFactor = 0.05;
+    //controls.update();
 
     const clearScene = () => {
       while(scene.children.length > 0){ 

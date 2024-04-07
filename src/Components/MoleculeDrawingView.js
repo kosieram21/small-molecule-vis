@@ -25,8 +25,8 @@ function MoleculeDrawingView({ solution }) {
             const rect = two.renderer.domElement.getBoundingClientRect();
             const canvasX = x * rect.width;
             const canvasY = y * rect.height;
-    
             const radius = 10 + (20 * atomicRadius);
+            
             const circle = new Two.Circle(canvasX, canvasY, radius);
             circle.fill = color;
             circle.noStroke();
