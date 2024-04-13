@@ -2,7 +2,7 @@ class Atom {
     #position;
     #symbol;
     #atomicNumber;
-    #atomicRadius
+    #atomicRadius;
 
     constructor(position, symbol, atomicNumber, atomicRadius) {
         this.#position = position;

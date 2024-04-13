@@ -3,7 +3,9 @@ import { useAppContext } from '../AppContext';
 import Two from 'two.js';
 import GraphicsContainer from './GraphicsContainer';
 import PeriodicTable from '../Object Model/PeriodicTable';
+import BondTable from '../Object Model/BondTable'
 import Atom from '../Object Model/Atom.js';
+import Bond from '../Object Model/Bond.js';
 
 function MoleculeDrawingView({ solution }) {
     const { selectedElement } = useAppContext();
@@ -15,6 +17,51 @@ function MoleculeDrawingView({ solution }) {
 
         let panning = false;
         let prevX, prevY;
+        let selectedAtom, hoveredAtom;
+
+        const getSolutionCoordinates = (clientX, clientY) => {
+            const rect = two.renderer.domElement.getBoundingClientRect();
+            const normalizedX = (clientX - rect.left) / rect.width;
+            const normalizedY = (clientY - rect.top) / rect.height;
+            const solutionX = (normalizedX - two.scene.translation.x / rect.width) / two.scene.scale;
+            const solutionY = (normalizedY - two.scene.translation.y / rect.height) / two.scene.scale;
+            return [solutionX, solutionY];
+        };
+
+        const getCanvasCoordinates = (solutionX, solutionY) => {
+            const rect = two.renderer.domElement.getBoundingClientRect();
+            const canvasX = solutionX * rect.width;
+            const canvasY = solutionY * rect.height;
+            return [canvasX, canvasY];
+        }
+
+        const renderCurrentBond = () => {
+            if (selectedAtom) {
+                const [startX, startY] = selectedAtom.getPosition();
+                const [endX, endY] = getSolutionCoordinates(prevX, prevY);
+                
+                const [canvasStartX, canvasStartY] = getCanvasCoordinates(startX, startY);
+                const [canvasEndX, canvasEndY] = getCanvasCoordinates(endX, endY);
+
+                const line = new Two.Line(canvasStartX, canvasStartY, canvasEndX, canvasEndY);
+                line.stroke = 'white';
+                line.linewidth = 10;
+                two.add(line);
+            }
+        };
+
+        const renderBond = (bond) => {
+            const [startX, startY] = bond.getAtom1().getPosition();
+            const [endX, endY] = bond.getAtom2().getPosition();
+                
+            const [canvasStartX, canvasStartY] = getCanvasCoordinates(startX, startY);
+            const [canvasEndX, canvasEndY] = getCanvasCoordinates(endX, endY);
+
+            const line = new Two.Line(canvasStartX, canvasStartY, canvasEndX, canvasEndY);
+            line.stroke = 'white';
+            line.linewidth = 10;
+            two.add(line);
+        };
 
         const renderAtom = (atom) => {
             const [x, y] = atom.getPosition();
@@ -29,7 +76,12 @@ function MoleculeDrawingView({ solution }) {
             
             const circle = new Two.Circle(canvasX, canvasY, radius);
             circle.fill = color;
-            circle.noStroke();
+            if (atom == selectedAtom || atom == hoveredAtom) {
+                circle.stroke = 'white'
+                circle.linewidth = 5;
+            } else {
+                circle.noStroke();
+            }
             two.add(circle);
     
             const text = new Two.Text(symbol, canvasX, canvasY);
@@ -42,22 +94,55 @@ function MoleculeDrawingView({ solution }) {
     
         const update = () => {
             two.clear();
+            renderCurrentBond();
+            solution.getBonds().forEach(bond => renderBond(bond));
             solution.getAtoms().forEach(atom => renderAtom(atom));
+        };
+
+        const checkAtomCollision = (clientX, clientY) => {
+            const rect = two.renderer.domElement.getBoundingClientRect();
+            const [solutionX, solutionY] = getSolutionCoordinates(clientX, clientY);
+            return solution.getAtoms().find(atom => {
+                const [x, y] = atom.getPosition();
+                const atomicRadius = atom.getAtomicRadius();
+                
+                const canvasX = solutionX * rect.width;
+                const canvasY = solutionY * rect.height;
+
+                const X = x * rect.width;
+                const Y = y * rect.height;
+                const radius = 10 + (20 * atomicRadius);
+
+                const euclidean_distance = Math.sqrt(Math.pow(canvasX - X, 2) + Math.pow(canvasY - Y, 2));
+                return euclidean_distance < radius;
+            });
+        };
+
+        const checkBondCoherence = () => {
+            if (selectedAtom && hoveredAtom && selectedAtom != hoveredAtom) {
+                BondTable.load().then(bondTable => {
+                    const bondPair = bondTable.conatainsSingleBond(selectedAtom.getSymbol(), hoveredAtom.getSymbol());
+                    if (bondPair) {
+                        const bondInfo = bondTable.getSingleBond(bondPair);
+                        solution.addBond(new Bond(selectedAtom, hoveredAtom,
+                            bondInfo.getBondLength(),
+                            bondInfo.getBondType()));
+                    }
+                    selectedAtom = null;
+                });
+            }
         };
     
         const onClick = (event) => {
             PeriodicTable.load().then(periodicTable => {
                 if (selectedElementRef.current.value) {
-                    const rect = two.renderer.domElement.getBoundingClientRect();
-                    const normalizedX = (event.clientX - rect.left) / rect.width;
-                    const normalizedY = (event.clientY - rect.top) / rect.height;
-                    const solutionX = (normalizedX - two.scene.translation.x / rect.width) / two.scene.scale;
-                    const solutionY = (normalizedY - two.scene.translation.y / rect.height) / two.scene.scale;
+                    const [solutionX, solutionY] = getSolutionCoordinates(event.clientX, event.clientY);
                     const element = periodicTable.getElement(selectedElementRef.current.value);
-                    solution.addAtom(new Atom([solutionX, solutionY, 0], 
+                    hoveredAtom = new Atom([solutionX, solutionY, 0], 
                         element.getSymbol(), 
                         element.getAtomicNumber(),
-                        element.getAtomicRadius()));
+                        element.getAtomicRadius());
+                    solution.addAtom(hoveredAtom);
                 }
             });
         };
@@ -70,28 +155,34 @@ function MoleculeDrawingView({ solution }) {
         };
 
         const onMouseDown = (event) => {
+            selectedAtom = checkAtomCollision(event.clientX, event.clientY);
+            prevX = event.clientX;
+            prevY = event.clientY;
+
             if (event.button === 2) {
                 event.preventDefault();
                 panning = true;
-                prevX = event.clientX;
-                prevY = event.clientY;
             }
         };
 
         const onMouseUp = (event) => {
+            checkBondCoherence();
+            //selectedAtom = null;
+
             if (event.button === 2) {
                 panning = false;
             }
         };
 
         const onMouseMove = (event) => {
+            hoveredAtom = checkAtomCollision(event.clientX, event.clientY);
+            prevX = event.clientX;
+            prevY = event.clientY;
+
             if (panning) {
                 const dx = (event.clientX - prevX) / two.scene.scale;
                 const dy = (event.clientY - prevY) / two.scene.scale;
                 two.scene.translation.set(two.scene.translation.x + dx, two.scene.translation.y + dy);
-    
-                prevX = event.clientX;
-                prevY = event.clientY;
             }
         }
 
