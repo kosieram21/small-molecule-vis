@@ -40,25 +40,7 @@ function MoleculeDrawingView({ solution }) {
             return canvasRadius;
         };
 
-        const renderCurrentBond = () => {
-            if (selectedAtom) {
-                const [startX, startY] = selectedAtom.getPosition();
-                const [endX, endY] = getSolutionCoordinates(prevX, prevY);
-                
-                const [canvasStartX, canvasStartY] = getCanvasCoordinates(startX, startY);
-                const [canvasEndX, canvasEndY] = getCanvasCoordinates(endX, endY);
-
-                const line = new Two.Line(canvasStartX, canvasStartY, canvasEndX, canvasEndY);
-                line.stroke = 'white';
-                line.linewidth = 10;
-                two.add(line);
-            }
-        };
-
-        const renderBond = (bond) => {
-            const [startX, startY] = bond.getAtom1().getPosition();
-            const [endX, endY] = bond.getAtom2().getPosition();
-                
+        const renderSingleBond = (startX, startY, endX, endY) => {
             const [canvasStartX, canvasStartY] = getCanvasCoordinates(startX, startY);
             const [canvasEndX, canvasEndY] = getCanvasCoordinates(endX, endY);
 
@@ -66,6 +48,20 @@ function MoleculeDrawingView({ solution }) {
             line.stroke = 'white';
             line.linewidth = 10;
             two.add(line);
+        };
+
+        const renderCurrentBond = () => {
+            if (selectedAtom) {
+                const [startX, startY] = selectedAtom.getPosition();
+                const [endX, endY] = getSolutionCoordinates(prevX, prevY);
+                renderSingleBond(startX, startY, endX, endY);
+            }
+        };
+
+        const renderBond = (bond) => {
+            const [startX, startY] = bond.getAtom1().getPosition();
+            const [endX, endY] = bond.getAtom2().getPosition();
+            renderSingleBond(startX, startY, endX, endY);
         };
 
         const renderAtom = (atom) => {
