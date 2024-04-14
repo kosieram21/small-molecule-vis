@@ -18,6 +18,7 @@ function MoleculeDrawingView({ solution }) {
         let panning = false;
         let prevX, prevY;
         let selectedAtom, hoveredAtom;
+        let selectedBond, hoveredBond;
 
         const getSolutionCoordinates = (clientX, clientY) => {
             const rect = two.renderer.domElement.getBoundingClientRect();
@@ -40,13 +41,17 @@ function MoleculeDrawingView({ solution }) {
             return canvasRadius;
         };
 
-        const renderSingleBond = (startX, startY, endX, endY) => {
+        const getCanvasLineWidth = () => {
+            return 10;
+        }
+
+        const renderSingleBond = (startX, startY, endX, endY, selected = false) => {
             const [canvasStartX, canvasStartY] = getCanvasCoordinates(startX, startY);
             const [canvasEndX, canvasEndY] = getCanvasCoordinates(endX, endY);
 
             const line = new Two.Line(canvasStartX, canvasStartY, canvasEndX, canvasEndY);
-            line.stroke = 'white';
-            line.linewidth = 10;
+            line.stroke = selected ? 'grey' : 'white';
+            line.linewidth = getCanvasLineWidth();
             two.add(line);
         };
 
@@ -61,7 +66,8 @@ function MoleculeDrawingView({ solution }) {
         const renderBond = (bond) => {
             const [startX, startY] = bond.getAtom1().getPosition();
             const [endX, endY] = bond.getAtom2().getPosition();
-            renderSingleBond(startX, startY, endX, endY);
+            const selected = bond == selectedBond || bond == hoveredBond;
+            renderSingleBond(startX, startY, endX, endY, selected);
         };
 
         const renderAtom = (atom) => {
@@ -77,7 +83,7 @@ function MoleculeDrawingView({ solution }) {
             circle.fill = color;
             if (atom == selectedAtom || atom == hoveredAtom) {
                 circle.stroke = 'white'
-                circle.linewidth = 5;
+                circle.linewidth = getCanvasLineWidth() / 2;
             } else {
                 circle.noStroke();
             }
@@ -102,18 +108,50 @@ function MoleculeDrawingView({ solution }) {
             const [solutionX, solutionY] = getSolutionCoordinates(clientX, clientY);
             const [canvasClientX, canvasClientY] = getCanvasCoordinates(solutionX, solutionY);
 
-            return Array.from(solution.getAtoms()).find(atom => {
+            for (const atom of solution.getAtoms()) {
                 const [x, y] = atom.getPosition();
                 const atomicRadius = atom.getAtomicRadius();
-
+        
                 const [canvasAtomX, canvasAtomY] = getCanvasCoordinates(x, y);
                 const canvasRadius = getCanvasRadius(atomicRadius);
-
+        
                 const dx = canvasClientX - canvasAtomX;
                 const dy = canvasClientY - canvasAtomY;
-                const euclideanDistance = Math.sqrt(Math.pow(dx, 2) + Math.pow(dy, 2));
-                return euclideanDistance < canvasRadius;
-            });
+                const euclideanDistance = Math.sqrt(dx * dx + dy * dy);
+        
+                if (euclideanDistance < canvasRadius) {
+                    return atom;
+                }
+            }
+
+            return null;
+        };
+
+        const checkBondCollision = (clientX, clientY) => {
+            const [solutionX, solutionY] = getSolutionCoordinates(clientX, clientY);
+            const [canvasClientX, canvasClientY] = getCanvasCoordinates(solutionX, solutionY);
+
+            for (const bond of solution.getBonds()) {
+                const [x1, y1] = bond.getAtom1().getPosition();
+                const [x2, y2] = bond.getAtom2().getPosition();
+
+                const [canvasAtom1X, canvasAtom1Y] = getCanvasCoordinates(x1, y1);
+                const [canvasAtom2X, canvasAtom2Y] = getCanvasCoordinates(x2, y2);
+                const lineWidth = getCanvasLineWidth();
+
+                const slope = (canvasAtom2Y - canvasAtom1Y) / (canvasAtom2X - canvasAtom1X);
+                const intercept = canvasAtom1Y - slope * canvasAtom1X;
+
+                const candidateY = slope * canvasClientX + intercept;
+                const distance = Math.abs(canvasClientY - candidateY);
+
+                if (distance < lineWidth) {
+                    return bond;
+                }
+
+            }
+
+            return null;
         };
 
         const checkBondCoherence = () => {
@@ -156,10 +194,18 @@ function MoleculeDrawingView({ solution }) {
 
         const onMouseDown = (event) => {
             selectedAtom = checkAtomCollision(event.clientX, event.clientY);
+            selectedBond = checkBondCollision(event.clientX, event.clientY);
 
-            if (event.shiftKey && selectedAtom) {
-                solution.removeAtom(selectedAtom);
-                selectedAtom = null;
+            if (event.shiftKey) {
+                if (selectedAtom) {
+                    solution.removeAtom(selectedAtom);
+                    selectedAtom = null;
+                }
+
+                if (selectedBond) {
+                    solution.removeBond(selectedBond);
+                    selectedBond = null;
+                }
             }
 
             if (event.button === 2) {
@@ -181,6 +227,8 @@ function MoleculeDrawingView({ solution }) {
 
         const onMouseMove = (event) => {
             hoveredAtom = checkAtomCollision(event.clientX, event.clientY);
+            hoveredBond = checkBondCollision(event.clientX, event.clientY);
+            console.log(hoveredBond);
 
             if (panning) {
                 const dx = (event.clientX - prevX) / two.scene.scale;
