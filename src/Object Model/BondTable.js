@@ -71,16 +71,16 @@ class BondTable {
         return this.#containsBond(this.#tripleBonds, element1, element2);
     }
 
-    getSingleBond(bondPair) {
-        return this.#singleBonds[bondPair];
+    getSingleBondInformation(bondHandle) {
+        return this.#singleBonds[bondHandle];
     }
 
-    getDoubleBond(bondPair) {
-        return this.#doubleBonds[bondPair];
+    getDoubleBondInformation(bondHandle) {
+        return this.#doubleBonds[bondHandle];
     }
 
-    getTripleBond(bondPair) {
-        return this.#tripleBonds[bondPair];
+    getTripleBondInformation(bondHandle) {
+        return this.#tripleBonds[bondHandle];
     }
 
     getBondTypes() {
@@ -101,16 +101,16 @@ class BondTable {
                                 results.data.forEach(rowData => {
                                     const bond = new BondInformation(rowData);
                                     const bondType = bond.getBondType();
-                                    const key = `${bond.getElement1()}${bond.getElement2()}`;
+                                    const bondHandle = `${bond.getElement1()}${bond.getElement2()}`;
                                     switch(bondType) {
                                         case 'Single':
-                                            this.#instance.#singleBonds[key] = bond;
+                                            this.#instance.#singleBonds[bondHandle] = bond;
                                             break;
                                         case 'Double':
-                                            this.#instance.#doubleBonds[key] = bond;
+                                            this.#instance.#doubleBonds[bondHandle] = bond;
                                             break;
                                         case 'Triple':
-                                            this.#instance.#tripleBonds[key] = bond;
+                                            this.#instance.#tripleBonds[bondHandle] = bond;
                                             break;
                                         default:
                                             reject(`Failed to parse bond table... ${bondType} is not a vlid bond type!`);

@@ -122,9 +122,9 @@ function MoleculeDrawingView({ solution }) {
         const checkBondCoherence = () => {
             if (selectedAtom && hoveredAtom && selectedAtom != hoveredAtom) {
                 BondTable.load().then(bondTable => {
-                    const bondPair = bondTable.conatainsSingleBond(selectedAtom.getSymbol(), hoveredAtom.getSymbol());
-                    if (bondPair) {
-                        const bondInfo = bondTable.getSingleBond(bondPair);
+                    const bondHandle = bondTable.conatainsSingleBond(selectedAtom.getSymbol(), hoveredAtom.getSymbol());
+                    if (bondHandle) {
+                        const bondInfo = bondTable.getSingleBondInformation(bondHandle);
                         solution.addBond(new Bond(selectedAtom, hoveredAtom,
                             bondInfo.getBondLength(),
                             bondInfo.getBondType()));
