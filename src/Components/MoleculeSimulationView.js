@@ -54,7 +54,7 @@ function MoleculeSimulationView({ solution }) {
 
     const renderSingleBond = (startX, startY, startZ, endX, endY, endZ) => {
       const [sceneStartX, sceneStartY, sceneStartZ] = getSceneCoordinates(startX, startY, startZ);
-      const [sceneEndX, sceneEndY, sceneEndZ] = getSceneCoordinates(endX, endY, startZ);
+      const [sceneEndX, sceneEndY, sceneEndZ] = getSceneCoordinates(endX, endY, endZ);
 
       const start = new THREE.Vector3(sceneStartX, sceneStartY, sceneStartZ);
       const end = new THREE.Vector3(sceneEndX, sceneEndY, sceneEndZ);
