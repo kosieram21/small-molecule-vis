@@ -21,6 +21,19 @@ function MoleculeSimulationView({ solution }) {
     //controls.dampingFactor = 0.05;
     //controls.update();
 
+    const getSceneCoordinates = (solutionX, solutionY, solutionZ) => {
+      const scale = 6;
+      const sceneX = solutionX * scale - scale / 2;
+      const sceneY = -solutionY * scale + scale / 2;
+      const sceneZ = solutionZ * scale;
+      return [sceneX, sceneY, sceneZ];
+    };
+
+    const getSceneRadius = (atomicRadius) => {
+      const sceneRadius = 0.1 + 0.2 * atomicRadius;
+      return sceneRadius;
+    };
+
     const clearScene = () => {
       while(scene.children.length > 0){ 
         const child = scene.children[0];
@@ -39,22 +52,48 @@ function MoleculeSimulationView({ solution }) {
       }
     };
 
+    const renderSingleBond = (startX, startY, startZ, endX, endY, endZ) => {
+      const [sceneStartX, sceneStartY, sceneStartZ] = getSceneCoordinates(startX, startY, startZ);
+      const [sceneEndX, sceneEndY, sceneEndZ] = getSceneCoordinates(endX, endY, startZ);
+
+      const start = new THREE.Vector3(sceneStartX, sceneStartY, sceneStartZ);
+      const end = new THREE.Vector3(sceneEndX, sceneEndY, sceneEndZ);
+      
+      const direction = new THREE.Vector3().subVectors(end, start);
+      const length = direction.length();
+
+      const orientation = new THREE.Matrix4();
+      orientation.lookAt(start, end, new THREE.Object3D().up);
+      orientation.setPosition(new THREE.Vector3().addVectors(start, end).multiplyScalar(0.5));
+      orientation.multiply(new THREE.Matrix4().makeRotationX(Math.PI / 2));
+
+      const geometry = new THREE.CylinderGeometry(0.05, 0.05, length, 8);
+      const material = new THREE.MeshBasicMaterial({ color: 'white' });
+
+      const cylinder = new THREE.Mesh(geometry, material);
+      cylinder.applyMatrix4(orientation);
+      scene.add(cylinder);
+    };
+
+    const renderBond = (bond) => {
+      const [startX, startY, startZ] = bond.getAtom1().getPosition();
+      const [endX, endY, endZ] = bond.getAtom2().getPosition();
+      renderSingleBond(startX, startY, startZ, endX, endY, endZ);
+    };
+
     const renderAtom = (atom) => {
       const [x, y, z] = atom.getPosition();
       const color = atom.getColor();
       const atomicRadius = atom.getAtomicRadius();
-        
-      const radius = 0.1 + 0.2 * atomicRadius;
-      const geometry = new THREE.SphereGeometry(radius);
-      const material = new THREE.MeshBasicMaterial({ color: color, wireframe: true })
-      const sphere = new THREE.Mesh(geometry, material);
-      
-      const scale = 6;
-      const sceneX = x * scale - scale / 2;
-      const sceneY = -y * scale + scale / 2;
-      const sceneZ = z * scale;
-      sphere.position.set(sceneX, sceneY, sceneZ);
 
+      const [sceneX, sceneY, sceneZ] = getSceneCoordinates(x, y, z);
+      const sceneRadius = getSceneRadius(atomicRadius);
+
+      const geometry = new THREE.SphereGeometry(sceneRadius);
+      const material = new THREE.MeshBasicMaterial({ color: color, wireframe: true });
+      
+      const sphere = new THREE.Mesh(geometry, material);
+      sphere.position.set(sceneX, sceneY, sceneZ);
       scene.add(sphere);
     };
 
@@ -62,6 +101,7 @@ function MoleculeSimulationView({ solution }) {
     const animate = () => {
       clearScene();
       solution.getAtoms().forEach(atom => renderAtom(atom));
+      solution.getBonds().forEach(bond => renderBond(bond));
       renderer.render(scene, camera);
       animationFrameId = requestAnimationFrame(animate);
     };

@@ -36,7 +36,7 @@ function MoleculeDrawingView({ solution }) {
         };
 
         const getCanvasRadius = (atomicRadius) => {
-            const canvasRadius = 10 + (20 * atomicRadius);
+            const canvasRadius = 10 + 20 * atomicRadius;
             return canvasRadius;
         };
 
@@ -101,6 +101,7 @@ function MoleculeDrawingView({ solution }) {
         const checkAtomCollision = (clientX, clientY) => {
             const [solutionX, solutionY] = getSolutionCoordinates(clientX, clientY);
             const [canvasClientX, canvasClientY] = getCanvasCoordinates(solutionX, solutionY);
+
             return solution.getAtoms().find(atom => {
                 const [x, y] = atom.getPosition();
                 const atomicRadius = atom.getAtomicRadius();
@@ -110,8 +111,8 @@ function MoleculeDrawingView({ solution }) {
 
                 const dx = canvasClientX - canvasAtomX;
                 const dy = canvasClientY - canvasAtomY;
-                const euclidean_distance = Math.sqrt(Math.pow(dx, 2) + Math.pow(dy, 2));
-                return euclidean_distance < canvasRadius;
+                const euclideanDistance = Math.sqrt(Math.pow(dx, 2) + Math.pow(dy, 2));
+                return euclideanDistance < canvasRadius;
             });
         };
 
