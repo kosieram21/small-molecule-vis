@@ -3,12 +3,14 @@ class Atom {
     #symbol;
     #atomicNumber;
     #atomicRadius;
+    #bonds;
 
     constructor(position, symbol, atomicNumber, atomicRadius) {
         this.#position = position;
         this.#symbol = symbol;
         this.#atomicNumber = atomicNumber;
         this.#atomicRadius = atomicRadius;
+        this.#bonds = [];
     }
 
     getPosition() {
@@ -32,6 +34,10 @@ class Atom {
     getColor() {
         const colorMap = ["red", "blue", "purple", ];
         return colorMap[this.#atomicNumber % colorMap.length];
+    }
+
+    getBonds() {
+        return this.#bonds;
     }
 }
 

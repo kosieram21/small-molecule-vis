@@ -102,7 +102,7 @@ function MoleculeDrawingView({ solution }) {
             const [solutionX, solutionY] = getSolutionCoordinates(clientX, clientY);
             const [canvasClientX, canvasClientY] = getCanvasCoordinates(solutionX, solutionY);
 
-            return solution.getAtoms().find(atom => {
+            return Array.from(solution.getAtoms()).find(atom => {
                 const [x, y] = atom.getPosition();
                 const atomicRadius = atom.getAtomicRadius();
 
@@ -156,6 +156,11 @@ function MoleculeDrawingView({ solution }) {
 
         const onMouseDown = (event) => {
             selectedAtom = checkAtomCollision(event.clientX, event.clientY);
+
+            if (event.shiftKey && selectedAtom) {
+                solution.removeAtom(selectedAtom);
+                selectedAtom = null;
+            }
 
             if (event.button === 2) {
                 event.preventDefault();

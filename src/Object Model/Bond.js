@@ -9,6 +9,9 @@ class Bond {
         this.#atom2 = atom2;
         this.#length = length;
         this.#type = type;
+
+        this.#atom1.getBonds().push(this);
+        this.#atom2.getBonds().push(this);
     }
 
     getAtom1() {

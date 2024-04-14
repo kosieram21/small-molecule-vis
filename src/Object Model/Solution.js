@@ -3,16 +3,29 @@ class Solution {
     #bonds;
 
     constructor() {
-        this.#atoms = [];
-        this.#bonds = [];
+        this.#atoms = new Set();
+        this.#bonds = new Set();
     }
 
     addAtom(atom) {
-        this.#atoms.push(atom);
+        this.#atoms.add(atom);
     }
 
     addBond(bond) {
-        this.#bonds.push(bond);
+        this.#bonds.add(bond);
+    }
+
+    removeAtom(atom) {
+        if (this.#atoms.has(atom)) {
+            this.#atoms.delete(atom);
+            atom.getBonds().forEach(bond => this.removeBond(bond));
+        }
+    }
+
+    removeBond(bond) {
+        if (this.#bonds.has(bond)) {
+            this.#bonds.delete(bond);
+        }
     }
 
     getAtoms() {
