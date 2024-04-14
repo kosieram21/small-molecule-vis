@@ -33,7 +33,12 @@ function MoleculeDrawingView({ solution }) {
             const canvasX = solutionX * rect.width;
             const canvasY = solutionY * rect.height;
             return [canvasX, canvasY];
-        }
+        };
+
+        const getCanvasRadius = (atomicRadius) => {
+            const canvasRadius = 10 + (20 * atomicRadius);
+            return canvasRadius;
+        };
 
         const renderCurrentBond = () => {
             if (selectedAtom) {
@@ -69,12 +74,10 @@ function MoleculeDrawingView({ solution }) {
             const color = atom.getColor();
             const atomicRadius = atom.getAtomicRadius();
 
-            const rect = two.renderer.domElement.getBoundingClientRect();
-            const canvasX = x * rect.width;
-            const canvasY = y * rect.height;
-            const radius = 10 + (20 * atomicRadius);
+            const [canvasX, canvasY] = getCanvasCoordinates(x, y);
+            const canvasRadius = getCanvasRadius(atomicRadius);
             
-            const circle = new Two.Circle(canvasX, canvasY, radius);
+            const circle = new Two.Circle(canvasX, canvasY, canvasRadius);
             circle.fill = color;
             if (atom == selectedAtom || atom == hoveredAtom) {
                 circle.stroke = 'white'
@@ -88,7 +91,7 @@ function MoleculeDrawingView({ solution }) {
             text.fill = 'black';
             text.alignment = 'center';
             text.baseline = 'middle';
-            text.size = radius;
+            text.size = canvasRadius;
             two.add(text);
         };
     
@@ -100,21 +103,19 @@ function MoleculeDrawingView({ solution }) {
         };
 
         const checkAtomCollision = (clientX, clientY) => {
-            const rect = two.renderer.domElement.getBoundingClientRect();
             const [solutionX, solutionY] = getSolutionCoordinates(clientX, clientY);
+            const [canvasClientX, canvasClientY] = getCanvasCoordinates(solutionX, solutionY);
             return solution.getAtoms().find(atom => {
                 const [x, y] = atom.getPosition();
                 const atomicRadius = atom.getAtomicRadius();
-                
-                const canvasX = solutionX * rect.width;
-                const canvasY = solutionY * rect.height;
 
-                const X = x * rect.width;
-                const Y = y * rect.height;
-                const radius = 10 + (20 * atomicRadius);
+                const [canvasAtomX, canvasAtomY] = getCanvasCoordinates(x, y);
+                const canvasRadius = getCanvasRadius(atomicRadius);
 
-                const euclidean_distance = Math.sqrt(Math.pow(canvasX - X, 2) + Math.pow(canvasY - Y, 2));
-                return euclidean_distance < radius;
+                const dx = canvasClientX - canvasAtomX;
+                const dy = canvasClientY - canvasAtomY;
+                const euclidean_distance = Math.sqrt(Math.pow(dx, 2) + Math.pow(dy, 2));
+                return euclidean_distance < canvasRadius;
             });
         };
 
@@ -130,6 +131,8 @@ function MoleculeDrawingView({ solution }) {
                     }
                     selectedAtom = null;
                 });
+            } else {
+                selectedAtom = null;
             }
         };
     
@@ -156,18 +159,18 @@ function MoleculeDrawingView({ solution }) {
 
         const onMouseDown = (event) => {
             selectedAtom = checkAtomCollision(event.clientX, event.clientY);
-            prevX = event.clientX;
-            prevY = event.clientY;
 
             if (event.button === 2) {
                 event.preventDefault();
                 panning = true;
             }
+
+            prevX = event.clientX;
+            prevY = event.clientY;
         };
 
         const onMouseUp = (event) => {
             checkBondCoherence();
-            //selectedAtom = null;
 
             if (event.button === 2) {
                 panning = false;
@@ -176,14 +179,15 @@ function MoleculeDrawingView({ solution }) {
 
         const onMouseMove = (event) => {
             hoveredAtom = checkAtomCollision(event.clientX, event.clientY);
-            prevX = event.clientX;
-            prevY = event.clientY;
 
             if (panning) {
                 const dx = (event.clientX - prevX) / two.scene.scale;
                 const dy = (event.clientY - prevY) / two.scene.scale;
                 two.scene.translation.set(two.scene.translation.x + dx, two.scene.translation.y + dy);
             }
+
+            prevX = event.clientX;
+            prevY = event.clientY;
         }
 
         const onContextMenu = (event) => {
