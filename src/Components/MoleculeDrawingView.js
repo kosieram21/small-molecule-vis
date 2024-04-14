@@ -143,12 +143,11 @@ function MoleculeDrawingView({ solution }) {
                 const intercept = canvasAtom1Y - slope * canvasAtom1X;
 
                 const candidateY = slope * canvasClientX + intercept;
-                const distance = Math.abs(canvasClientY - candidateY);
+                const pointToLineDistance = Math.abs(canvasClientY - candidateY);
 
-                if (distance < lineWidth) {
+                if (pointToLineDistance < lineWidth) {
                     return bond;
                 }
-
             }
 
             return null;
