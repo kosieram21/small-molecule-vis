@@ -99,6 +99,7 @@ function MoleculeDrawingView({ solution }) {
     
         const update = () => {
             two.clear();
+            
             renderCurrentBond();
             solution.getBonds().forEach(bond => renderBond(bond));
             solution.getAtoms().forEach(atom => renderAtom(atom));
