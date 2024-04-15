@@ -17,9 +17,16 @@ function MoleculeSimulationView({ solution }) {
 
     camera.position.set(0, 0, 5);
 
+    //renderer.setClearColor(0xffffff);
+    renderer.setPixelRatio(window.devicePixelRatio);
+
     //controls.enableDamping = true;
     //controls.dampingFactor = 0.05;
     //controls.update();
+
+    const ambientLight = new THREE.AmbientLight(0xffffff, 1.2);
+    const directionalLight = new THREE.DirectionalLight(0xffffff, 2);
+    directionalLight.position.set(0, 0, 10);
 
     const getSceneCoordinates = (solutionX, solutionY, solutionZ) => {
       const scale = 6;
@@ -67,8 +74,8 @@ function MoleculeSimulationView({ solution }) {
       orientation.setPosition(new THREE.Vector3().addVectors(start, end).multiplyScalar(0.5));
       orientation.multiply(new THREE.Matrix4().makeRotationX(Math.PI / 2));
 
-      const geometry = new THREE.CylinderGeometry(0.05, 0.05, length, 8);
-      const material = new THREE.MeshBasicMaterial({ color: 'white' });
+      const geometry = new THREE.CylinderGeometry(0.05, 0.05, length, 32);
+      const material = new THREE.MeshPhongMaterial({ color: '#white', shininess: 100 });
 
       const cylinder = new THREE.Mesh(geometry, material);
       cylinder.applyMatrix4(orientation);
@@ -89,9 +96,9 @@ function MoleculeSimulationView({ solution }) {
       const [sceneX, sceneY, sceneZ] = getSceneCoordinates(x, y, z);
       const sceneRadius = getSceneRadius(atomicRadius);
 
-      const geometry = new THREE.SphereGeometry(sceneRadius);
-      const material = new THREE.MeshBasicMaterial({ color: color });
-      
+      const geometry = new THREE.SphereGeometry(sceneRadius, 32, 32);
+      const material = new THREE.MeshPhongMaterial({ color: color });
+
       const sphere = new THREE.Mesh(geometry, material);
       sphere.position.set(sceneX, sceneY, sceneZ);
       scene.add(sphere);
@@ -100,6 +107,8 @@ function MoleculeSimulationView({ solution }) {
     let animationFrameId;
     const animate = () => {
       clearScene();
+      scene.add(ambientLight);
+      scene.add(directionalLight);
       solution.getAtoms().forEach(atom => renderAtom(atom));
       solution.getBonds().forEach(bond => renderBond(bond));
       renderer.render(scene, camera);

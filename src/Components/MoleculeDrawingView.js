@@ -227,7 +227,6 @@ function MoleculeDrawingView({ solution }) {
         const onMouseMove = (event) => {
             hoveredAtom = checkAtomCollision(event.clientX, event.clientY);
             hoveredBond = checkBondCollision(event.clientX, event.clientY);
-            console.log(hoveredBond);
 
             if (panning) {
                 const dx = (event.clientX - prevX) / two.scene.scale;
