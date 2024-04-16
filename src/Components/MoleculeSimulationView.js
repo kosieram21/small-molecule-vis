@@ -99,7 +99,7 @@ function MoleculeSimulationView({ solution }) {
       const sceneRadius = getSceneRadius(atomicRadius);
 
       const geometry = new THREE.SphereGeometry(sceneRadius, 32, 32);
-      const material = new THREE.MeshPhongMaterial({ color: color });
+      const material = new THREE.MeshPhongMaterial({ color: color, shininess: 50 });
 
       const sphere = new THREE.Mesh(geometry, material);
       sphere.position.set(sceneX, sceneY, sceneZ);
