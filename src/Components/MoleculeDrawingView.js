@@ -37,20 +37,62 @@ function MoleculeDrawingView({ solution }) {
         };
 
         const getCanvasRadius = (atomicRadius) => {
-            const canvasRadius = 10 + 20 * atomicRadius;
+            const canvasRadius = 15 + 30 * atomicRadius;
             return canvasRadius;
         };
 
-        const getCanvasLineWidth = () => {
-            return 10;
-        }
+        const getCanvasFontSize = (atomicRadius) => {
+            const fontSize = 20 + 40 * atomicRadius;
+            return fontSize;
+        };
 
-        const renderSingleBond = (startX, startY, endX, endY, selected = false) => {
+        const getCanvasLineWidth = () => {
+            return 5;
+        };
+
+        const getHighlightColor = () => {
+            return 'rgba(173, 216, 230, 0.5)'
+        };
+
+        const euclideanDistance = (ax, ay, bx, by) => {
+            const dx = bx - ax;
+            const dy = by - ay;
+            const distance = Math.sqrt(dx * dx + dy * dy);
+            return distance;
+        };
+
+        const pointToSegmentDistance = (px, py, ax, ay, bx, by) => {
+            const dx = bx - ax;
+            const dy = by - ay;
+            const p2x = px - ax;
+            const p2y = py - ay;
+            const squaredNorm = dx * dx + dy * dy;
+        
+            if (squaredNorm === 0) {
+                return Math.sqrt(p2x * p2x + p2y * p2y);
+            }
+        
+            const t = Math.max(0, Math.min(1, (p2x * dx + p2y * dy) / squaredNorm));
+            const closestX = (ax + t * dx);
+            const closestY = (ay + t * dy);
+            const distance = euclideanDistance(px, py, closestX, closestY);
+        
+            return distance;
+        };
+
+        const vectorOrientation = (ax, ay, bx, by) => {
+            const dx = bx - ax;
+            const dy = by - ay;
+            const angle = Math.atan2(dy, dx);
+            return angle;
+        };
+
+        const renderSingleBond = (startX, startY, endX, endY) => {
             const [canvasStartX, canvasStartY] = getCanvasCoordinates(startX, startY);
             const [canvasEndX, canvasEndY] = getCanvasCoordinates(endX, endY);
 
             const line = new Two.Line(canvasStartX, canvasStartY, canvasEndX, canvasEndY);
-            line.stroke = selected ? 'grey' : 'white';
+            line.stroke = 'black';
             line.linewidth = getCanvasLineWidth();
             two.add(line);
         };
@@ -80,22 +122,60 @@ function MoleculeDrawingView({ solution }) {
             const canvasRadius = getCanvasRadius(atomicRadius);
             
             const circle = new Two.Circle(canvasX, canvasY, canvasRadius);
-            circle.fill = color;
-            if (atom == selectedAtom || atom == hoveredAtom) {
-                circle.stroke = 'white'
-                circle.linewidth = getCanvasLineWidth() / 2;
-            } else {
-                circle.noStroke();
-            }
+            circle.fill = 'white';
+            circle.noStroke();
             two.add(circle);
     
             const text = new Two.Text(symbol, canvasX, canvasY);
-            text.fill = 'black';
+            text.fill = color;
             text.alignment = 'center';
             text.baseline = 'middle';
-            text.size = canvasRadius;
+            text.size = getCanvasFontSize(atomicRadius);
             two.add(text);
         };
+
+        const renderBondHighlights = (bond) => {
+            if (!selectedAtom && !hoveredAtom && (bond == selectedBond || bond == hoveredBond)) {
+                const [startX, startY] = bond.getAtom1().getPosition();
+                const [endX, endY] = bond.getAtom2().getPosition();
+
+                const [canvasStartX, canvasStartY] = getCanvasCoordinates(startX, startY);
+                const [canvasEndX, canvasEndY] = getCanvasCoordinates(endX, endY);
+
+                const canvasMidX = (canvasStartX + canvasEndX) / 2;
+                const canvasMidY = (canvasStartY + canvasEndY) / 2;
+                const distance = euclideanDistance(canvasStartX, canvasStartY, canvasEndX, canvasEndY);
+
+                const rx = (distance / 2) - 15;
+                const ry = getCanvasLineWidth() * 4;
+
+                const highlight = new Two.Ellipse(canvasMidX, canvasMidY, rx, ry);
+                highlight.fill = getHighlightColor();
+                highlight.rotation = vectorOrientation(canvasStartX, canvasStartY, canvasEndX, canvasEndY);
+                highlight.noStroke();
+                two.add(highlight);
+            }
+        };
+
+        const renderAtomHighlights = (atom) => {
+            if (atom == selectedAtom || atom == hoveredAtom) {
+                const [x, y] = atom.getPosition();
+                const atomicRadius = atom.getAtomicRadius();
+
+                const [canvasX, canvasY] = getCanvasCoordinates(x, y);
+                const canvasRadius = getCanvasRadius(atomicRadius);
+
+                const highlight = new Two.Circle(canvasX, canvasY, canvasRadius);
+                highlight.fill = getHighlightColor();
+                highlight.noStroke();
+                two.add(highlight);
+            }
+        };
+
+        const renderHighlights = () => {
+            solution.getBonds().forEach(bond => renderBondHighlights(bond));
+            solution.getAtoms().forEach(atom => renderAtomHighlights(atom));
+        }
     
         const update = () => {
             two.clear();
@@ -103,33 +183,8 @@ function MoleculeDrawingView({ solution }) {
             renderCurrentBond();
             solution.getBonds().forEach(bond => renderBond(bond));
             solution.getAtoms().forEach(atom => renderAtom(atom));
+            renderHighlights();
         };
-
-        const euclideanDistance = (ax, ay, bx, by) => {
-            const dx = bx - ax;
-            const dy = by - ay;
-            const distance = Math.sqrt(dx * dx + dy * dy);
-            return distance;
-        }
-
-        const pointToSegmentDistance = (px, py, ax, ay, bx, by) => {
-            const dx = bx - ax;
-            const dy = by - ay;
-            const p2x = px - ax;
-            const p2y = py - ay;
-            const squaredNorm = dx * dx + dy * dy;
-        
-            if (squaredNorm === 0) {
-                return Math.sqrt(p2x * p2x + p2y * p2y);
-            }
-        
-            const t = Math.max(0, Math.min(1, (p2x * dx + p2y * dy) / squaredNorm));
-            const closestX = (ax + t * dx);
-            const closestY = (ay + t * dy);
-            const distance = euclideanDistance(px, py, closestX, closestY);
-        
-            return distance;
-        }
 
         const checkAtomCollision = (clientX, clientY) => {
             const [solutionX, solutionY] = getSolutionCoordinates(clientX, clientY);
