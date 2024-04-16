@@ -278,6 +278,7 @@ function MoleculeDrawingView({ solution }) {
         const two = twoRef.current;
         two.width = width;
         two.height = height;
+        two.scene.translation.set(width / 2, height / 2);
     }
 
     return <GraphicsContainer renderer={twoRef.current.renderer} onResize={onResize}/>;

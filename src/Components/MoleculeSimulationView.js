@@ -30,9 +30,9 @@ function MoleculeSimulationView({ solution }) {
     directionalLight.position.set(0, 0, 10);
 
     const getSceneCoordinates = (solutionX, solutionY, solutionZ) => {
-      const scale = 6;
-      const sceneX = solutionX * scale - scale / 2;
-      const sceneY = -solutionY * scale + scale / 2;
+      const scale = 7.5;
+      const sceneX = solutionX * scale;
+      const sceneY = -solutionY * scale;
       const sceneZ = solutionZ * scale;
       return [sceneX, sceneY, sceneZ];
     };
