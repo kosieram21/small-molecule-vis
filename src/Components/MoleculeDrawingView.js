@@ -187,9 +187,10 @@ function MoleculeDrawingView({ solution }) {
 
         const onScroll = (event) => {
             event.preventDefault();
-            two.scene.scale += 
-                event.deltaY > 0 ? -0.05 : 
-                event.deltaY < 0 ? 0.05 : 0;
+            two.scene.scale +=
+                event.deltaY > 0 ? -0.01 : 
+                event.deltaY < 0 ? 0.01 : 0;
+            two.scene.scale = Math.max(two.scene.scale, 0.1);
         };
 
         const onMouseDown = (event) => {
@@ -230,8 +231,8 @@ function MoleculeDrawingView({ solution }) {
             hoveredBond = checkBondCollision(event.clientX, event.clientY);
 
             if (panning) {
-                const dx = (event.clientX - prevX) / two.scene.scale;
-                const dy = (event.clientY - prevY) / two.scene.scale;
+                const dx = (event.clientX - prevX); // two.scene.scale;
+                const dy = (event.clientY - prevY); // two.scene.scale;
                 two.scene.translation.set(two.scene.translation.x + dx, two.scene.translation.y + dy);
             }
 
