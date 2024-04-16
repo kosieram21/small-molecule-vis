@@ -76,7 +76,7 @@ function MoleculeSimulationView({ solution }) {
       orientation.multiply(new THREE.Matrix4().makeRotationX(Math.PI / 2));
 
       const geometry = new THREE.CylinderGeometry(0.05, 0.05, length, 32);
-      const material = new THREE.MeshPhongMaterial({ color: '#white', shininess: 100 });
+      const material = new THREE.MeshPhongMaterial({ color: 'white', shininess: 100 });
 
       const cylinder = new THREE.Mesh(geometry, material);
       cylinder.applyMatrix4(orientation);

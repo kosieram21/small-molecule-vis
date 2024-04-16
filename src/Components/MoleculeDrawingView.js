@@ -105,6 +105,32 @@ function MoleculeDrawingView({ solution }) {
             solution.getAtoms().forEach(atom => renderAtom(atom));
         };
 
+        const euclideanDistance = (ax, ay, bx, by) => {
+            const dx = bx - ax;
+            const dy = by - ay;
+            const distance = Math.sqrt(dx * dx + dy * dy);
+            return distance;
+        }
+
+        const pointToSegmentDistance = (px, py, ax, ay, bx, by) => {
+            const dx = bx - ax;
+            const dy = by - ay;
+            const p2x = px - ax;
+            const p2y = py - ay;
+            const squaredNorm = dx * dx + dy * dy;
+        
+            if (squaredNorm === 0) {
+                return Math.sqrt(p2x * p2x + p2y * p2y);
+            }
+        
+            const t = Math.max(0, Math.min(1, (p2x * dx + p2y * dy) / squaredNorm));
+            const closestX = (ax + t * dx);
+            const closestY = (ay + t * dy);
+            const distance = euclideanDistance(px, py, closestX, closestY);
+        
+            return distance;
+        }
+
         const checkAtomCollision = (clientX, clientY) => {
             const [solutionX, solutionY] = getSolutionCoordinates(clientX, clientY);
             const [canvasClientX, canvasClientY] = getCanvasCoordinates(solutionX, solutionY);
@@ -116,11 +142,9 @@ function MoleculeDrawingView({ solution }) {
                 const [canvasAtomX, canvasAtomY] = getCanvasCoordinates(x, y);
                 const canvasRadius = getCanvasRadius(atomicRadius);
         
-                const dx = canvasClientX - canvasAtomX;
-                const dy = canvasClientY - canvasAtomY;
-                const euclideanDistance = Math.sqrt(dx * dx + dy * dy);
+                const distance = euclideanDistance(canvasClientX, canvasClientY, canvasAtomX, canvasAtomY);
         
-                if (euclideanDistance < canvasRadius) {
+                if (distance < canvasRadius) {
                     return atom;
                 }
             }
@@ -131,26 +155,22 @@ function MoleculeDrawingView({ solution }) {
         const checkBondCollision = (clientX, clientY) => {
             const [solutionX, solutionY] = getSolutionCoordinates(clientX, clientY);
             const [canvasClientX, canvasClientY] = getCanvasCoordinates(solutionX, solutionY);
-
+        
             for (const bond of solution.getBonds()) {
                 const [x1, y1] = bond.getAtom1().getPosition();
                 const [x2, y2] = bond.getAtom2().getPosition();
-
+        
                 const [canvasAtom1X, canvasAtom1Y] = getCanvasCoordinates(x1, y1);
                 const [canvasAtom2X, canvasAtom2Y] = getCanvasCoordinates(x2, y2);
                 const lineWidth = getCanvasLineWidth();
+        
+                const distance = pointToSegmentDistance(canvasClientX, canvasClientY, canvasAtom1X, canvasAtom1Y, canvasAtom2X, canvasAtom2Y);
 
-                const slope = (canvasAtom2Y - canvasAtom1Y) / (canvasAtom2X - canvasAtom1X);
-                const intercept = canvasAtom1Y - slope * canvasAtom1X;
-
-                const candidateY = slope * canvasClientX + intercept;
-                const pointToLineDistance = Math.abs(canvasClientY - candidateY);
-
-                if (pointToLineDistance < lineWidth) {
+                if (distance < lineWidth) {
                     return bond;
                 }
             }
-
+        
             return null;
         };
 
@@ -220,6 +240,7 @@ function MoleculeDrawingView({ solution }) {
 
         const onMouseUp = (event) => {
             checkBondCoherence();
+            selectedBond = null;
 
             if (event.button === 2) {
                 panning = false;
