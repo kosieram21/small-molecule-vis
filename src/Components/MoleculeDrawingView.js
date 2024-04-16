@@ -179,10 +179,24 @@ function MoleculeDrawingView({ solution }) {
     
         const update = () => {
             two.clear();
+
+            solution.getBonds().forEach(bond => renderBond(bond));
+            solution.getAtoms().forEach(atom => {
+                if (atom != selectedAtom && atom != hoveredAtom) {
+                    renderAtom(atom);
+                }
+            });
             
             renderCurrentBond();
-            solution.getBonds().forEach(bond => renderBond(bond));
-            solution.getAtoms().forEach(atom => renderAtom(atom));
+
+            if (selectedAtom) {
+                renderAtom(selectedAtom);
+            }
+
+            if (hoveredAtom) {
+                renderAtom(hoveredAtom);
+            }
+            
             renderHighlights();
         };
 
@@ -263,9 +277,9 @@ function MoleculeDrawingView({ solution }) {
         const onScroll = (event) => {
             event.preventDefault();
             two.scene.scale +=
-                event.deltaY > 0 ? -0.01 : 
-                event.deltaY < 0 ? 0.01 : 0;
-            two.scene.scale = Math.max(two.scene.scale, 0.1);
+                event.deltaY > 0 ? -0.03 : 
+                event.deltaY < 0 ? 0.03 : 0;
+            two.scene.scale = Math.max(two.scene.scale, 0.02);
         };
 
         const onMouseDown = (event) => {
