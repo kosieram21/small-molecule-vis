@@ -311,9 +311,9 @@ function MoleculeDrawingView({ solution }) {
         const onScroll = (event) => {
             event.preventDefault();
             two.scene.scale +=
-                event.deltaY > 0 ? -0.03 : 
-                event.deltaY < 0 ? 0.03 : 0;
-            two.scene.scale = Math.max(two.scene.scale, 0.02);
+                event.deltaY > 0 ? -0.05 : 
+                event.deltaY < 0 ? 0.05 : 0;
+            two.scene.scale = Math.max(two.scene.scale, 0.2);
         };
 
         const onMouseDown = (event) => {
