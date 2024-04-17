@@ -1,14 +1,22 @@
 .toolbar {
     display: flex;
-    margin: 5px;
-}
-
-.toolbar .label {
-    margin-right: 10px;
-    font-size: 25px;
 }
 
 .toolbar .combo-box {
+    margin-left: 2px;
     margin-right: 10px;
-    width: 175px;
+    margin-bottom: 5px;
+    width: 200px;
+}
+
+.toolbar .check-box .MuiFormControlLabel-root {
+    align-items: flex-start;
+}
+
+.toolbar .check-box .MuiCheckbox-root {
+    margin-top: 12px;
+}
+
+.toolbar .check-box .MuiFormControlLabel-label {
+    margin-top: 12px;
 }

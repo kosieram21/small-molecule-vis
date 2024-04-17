@@ -1,6 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import './Toolbar.css';
-import Select from 'react-select';
+import TextField from '@mui/material/TextField';
+import Autocomplete from '@mui/material/Autocomplete';
+import FormControlLabel from '@mui/material/FormControlLabel';
+import Checkbox from '@mui/material/Checkbox';
 import { useAppContext } from '../AppContext';
 import PeriodicTable from '../Object Model/PeriodicTable';
 import BondTable from '../Object Model/BondTable'
@@ -8,7 +11,7 @@ import BondTable from '../Object Model/BondTable'
 function Toolbar() {
   const [elementOptions, setElementOptions] = useState([]);
   const [bondOptions, setBondOptions] = useState([]);
-  const { setSelectedElement, setSelectedBond } = useAppContext();
+  const { setSelectedElement, setSelectedBond, gridEnabled, setGridEnabled } = useAppContext();
 
   useEffect(() => {
     PeriodicTable.load().then(periodicTable => {
@@ -28,20 +31,26 @@ function Toolbar() {
     });
   }, []);
 
-  const elementComboBoxOnChange = selectedOption => {
+  const elementComboBoxOnChange = (event, selectedOption) => {
     setSelectedElement(selectedOption);
   };
 
-  const bondComboBoxOnChange = selectedOption => {
+  const bondComboBoxOnChange = (event, selectedOption) => {
     setSelectedBond(selectedOption);
+  }
+
+  const gridCheckBoxOnChange = (event) => {
+    setGridEnabled(event.target.checked);
   }
 
   return (
     <div className='toolbar'>
-      <span className='label'>Element:</span>
-      <Select className='combo-box' options={elementOptions} onChange={elementComboBoxOnChange}/>
-      <span className='label'>Bond:</span>
-      <Select className='combo-box' options={bondOptions} onChange={bondComboBoxOnChange}/>
+      <Autocomplete className='combo-box' options={elementOptions} onChange={elementComboBoxOnChange}
+        renderInput={(params) => <TextField {...params} label="Element" variant="standard" />}/>
+      <Autocomplete className='combo-box' options={bondOptions} onChange={bondComboBoxOnChange}
+        renderInput={(params) => <TextField {...params} label="Bond" variant="standard"/>}/>
+      <FormControlLabel className='check-box' value="end" label="Grid" labelPlacement="start"
+        control={<Checkbox checked={gridEnabled} onChange={gridCheckBoxOnChange}/>}/>
     </div>
   );
 }

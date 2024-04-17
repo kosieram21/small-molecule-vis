@@ -8,9 +8,10 @@ import Atom from '../Object Model/Atom.js';
 import Bond from '../Object Model/Bond.js';
 
 function MoleculeDrawingView({ solution }) {
-    const { selectedElement, selectedBond } = useAppContext();
+    const { selectedElement, selectedBond, gridEnabled } = useAppContext();
     const selectedElementRef = useRef(selectedElement);
     const selectedBondRef = useRef(selectedBond);
+    const gridEnabledRef = useRef(gridEnabled);
     const twoRef = useRef(new Two());
 
     useEffect(() => {
@@ -91,35 +92,37 @@ function MoleculeDrawingView({ solution }) {
         };
 
         const renderGrid = () => {
-            const spacing = 50;
-            const color = 'blue';
-            const lineWidth = 1;
-            const dash = [2, 4];
+            if (gridEnabledRef.current) {
+                const spacing = 50;
+                const color = 'blue';
+                const lineWidth = 1;
+                const dash = [2, 4];
 
-            const minX = (-two.scene.translation.x) / two.scene.scale;
-            const maxX = (two.width - two.scene.translation.x) / two.scene.scale;
-            const minY = (-two.scene.translation.y) / two.scene.scale;
-            const maxY = (two.height - two.scene.translation.y) / two.scene.scale;
+                const minX = (-two.scene.translation.x) / two.scene.scale;
+                const maxX = (two.width - two.scene.translation.x) / two.scene.scale;
+                const minY = (-two.scene.translation.y) / two.scene.scale;
+                const maxY = (two.height - two.scene.translation.y) / two.scene.scale;
 
-            const startX = Math.floor(minX / spacing) * spacing;
-            const endX = Math.ceil(maxX / spacing) * spacing;
-            const startY = Math.floor(minY / spacing) * spacing;
-            const endY = Math.ceil(maxY / spacing) * spacing;
+                const startX = Math.floor(minX / spacing) * spacing;
+                const endX = Math.ceil(maxX / spacing) * spacing;
+                const startY = Math.floor(minY / spacing) * spacing;
+                const endY = Math.ceil(maxY / spacing) * spacing;
     
-            for (let x = startX; x <= endX; x += spacing) {
-                const line = new Two.Line(x, minY, x, maxY);
-                line.stroke = color;
-                line.linewidth = lineWidth;
-                line.dashes = dash;
-                two.add(line);
-            }
+                for (let x = startX; x <= endX; x += spacing) {
+                    const line = new Two.Line(x, minY, x, maxY);
+                    line.stroke = color;
+                    line.linewidth = lineWidth;
+                    line.dashes = dash;
+                    two.add(line);
+                }
     
-            for (let y = startY; y <= endY; y += spacing) {
-                const line = new Two.Line(minX, y, maxX, y);
-                line.stroke = color;
-                line.linewidth = lineWidth;
-                line.dashes = dash;
-                two.add(line);
+                for (let y = startY; y <= endY; y += spacing) {
+                    const line = new Two.Line(minX, y, maxX, y);
+                    line.stroke = color;
+                    line.linewidth = lineWidth;
+                    line.dashes = dash;
+                    two.add(line);
+                }
             }
         };
 
@@ -399,6 +402,10 @@ function MoleculeDrawingView({ solution }) {
     useEffect(() => {
         selectedBondRef.current = selectedBond;
     }, [selectedBond])
+
+    useEffect(() => {
+        gridEnabledRef.current = gridEnabled;
+    }, [gridEnabled])
 
     const onResize = (width, height) => {
         const two = twoRef.current;
