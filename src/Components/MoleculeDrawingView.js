@@ -38,7 +38,7 @@ function MoleculeDrawingView({ solution }) {
 
         const getCanvasRadius = (atomicRadius) => {
             const canvasRadius = 15 + 30 * atomicRadius;
-            return canvasRadius;
+            return atomicRadius == 0 ? 0 : canvasRadius;
         };
 
         const getCanvasFontSize = (atomicRadius) => {
@@ -54,18 +54,28 @@ function MoleculeDrawingView({ solution }) {
             return 'rgba(173, 216, 230, 0.5)'
         };
 
-        const euclideanDistance = (ax, ay, bx, by) => {
+        const vectorDirection = (ax, ay, bx, by, normalized = false) => {
             const dx = bx - ax;
             const dy = by - ay;
+            const scalar = normalized ? euclideanDistance(ax, ay, bx, by) : 1;
+            return [dx / scalar, dy / scalar];
+        }
+
+        const vectorOrientation = (ax, ay, bx, by) => {
+            const [dx, dy] = vectorDirection(ax, ay, bx, by);
+            const angle = Math.atan2(dy, dx);
+            return angle;
+        };
+
+        const euclideanDistance = (ax, ay, bx, by) => {
+            const [dx, dy] = vectorDirection(ax, ay, bx, by);
             const distance = Math.sqrt(dx * dx + dy * dy);
             return distance;
         };
 
         const pointToSegmentDistance = (px, py, ax, ay, bx, by) => {
-            const dx = bx - ax;
-            const dy = by - ay;
-            const p2x = px - ax;
-            const p2y = py - ay;
+            const [dx, dy] = vectorDirection(ax, ay, bx, by);
+            const [p2x, p2y] = vectorDirection(ax, ay, px, py);
             const squaredNorm = dx * dx + dy * dy;
         
             if (squaredNorm === 0) {
@@ -78,13 +88,6 @@ function MoleculeDrawingView({ solution }) {
             const distance = euclideanDistance(px, py, closestX, closestY);
         
             return distance;
-        };
-
-        const vectorOrientation = (ax, ay, bx, by) => {
-            const dx = bx - ax;
-            const dy = by - ay;
-            const angle = Math.atan2(dy, dx);
-            return angle;
         };
 
         const renderGrid = () => {
@@ -120,29 +123,42 @@ function MoleculeDrawingView({ solution }) {
             }
         };
 
-        const renderSingleBond = (startX, startY, endX, endY) => {
+        const renderSingleBond = (startX, startY, endX, endY, radius1, radius2) => {
             const [canvasStartX, canvasStartY] = getCanvasCoordinates(startX, startY);
             const [canvasEndX, canvasEndY] = getCanvasCoordinates(endX, endY);
 
-            const line = new Two.Line(canvasStartX, canvasStartY, canvasEndX, canvasEndY);
+            const canvasRadius1 = getCanvasRadius(radius1);
+            const canvasRadius2 = getCanvasRadius(radius2);
+
+            const [dx, dy] = vectorDirection(canvasStartX, canvasStartY, canvasEndX, canvasEndY, true);
+
+            const ax = canvasStartX + dx * canvasRadius1;
+            const ay = canvasStartY + dy * canvasRadius1;
+            const bx = canvasEndX - dx * canvasRadius2;
+            const by = canvasEndY - dy * canvasRadius2;
+
+            const line = new Two.Line(ax, ay, bx, by);
             line.stroke = 'black';
             line.linewidth = getCanvasLineWidth();
             two.add(line);
         };
 
         const renderCurrentBond = () => {
-            if (selectedAtom) {
+            if (selectedAtom && selectedAtom != hoveredAtom) {
                 const [startX, startY] = selectedAtom.getPosition();
-                const [endX, endY] = getSolutionCoordinates(prevX, prevY);
-                renderSingleBond(startX, startY, endX, endY);
+                const [endX, endY] = hoveredAtom ? hoveredAtom.getPosition() : getSolutionCoordinates(prevX, prevY);
+                const radius1 = selectedAtom.getAtomicRadius();
+                const radius2 = hoveredAtom ? hoveredAtom.getAtomicRadius() : 0;
+                renderSingleBond(startX, startY, endX, endY, radius1, radius2);
             }
         };
 
         const renderBond = (bond) => {
             const [startX, startY] = bond.getAtom1().getPosition();
             const [endX, endY] = bond.getAtom2().getPosition();
-            const selected = bond == selectedBond || bond == hoveredBond;
-            renderSingleBond(startX, startY, endX, endY, selected);
+            const radius1 = bond.getAtom1().getAtomicRadius();
+            const radius2 = bond.getAtom2().getAtomicRadius();
+            renderSingleBond(startX, startY, endX, endY, radius1, radius2);
         };
 
         const renderAtom = (atom) => {
@@ -152,12 +168,6 @@ function MoleculeDrawingView({ solution }) {
             const atomicRadius = atom.getAtomicRadius();
 
             const [canvasX, canvasY] = getCanvasCoordinates(x, y);
-            const canvasRadius = getCanvasRadius(atomicRadius);
-            
-            const circle = new Two.Circle(canvasX, canvasY, canvasRadius);
-            circle.fill = 'white';
-            circle.noStroke();
-            two.add(circle);
     
             const text = new Two.Text(symbol, canvasX, canvasY);
             text.fill = color;
@@ -168,7 +178,7 @@ function MoleculeDrawingView({ solution }) {
         };
 
         const renderBondHighlights = (bond) => {
-            if (!selectedAtom && !hoveredAtom && (bond == selectedBond || bond == hoveredBond)) {
+            if (!selectedAtom && !hoveredAtom && (bond === selectedBond || bond === hoveredBond)) {
                 const [startX, startY] = bond.getAtom1().getPosition();
                 const [endX, endY] = bond.getAtom2().getPosition();
 
@@ -191,7 +201,7 @@ function MoleculeDrawingView({ solution }) {
         };
 
         const renderAtomHighlights = (atom) => {
-            if (atom == selectedAtom || atom == hoveredAtom) {
+            if (atom === selectedAtom || atom === hoveredAtom) {
                 const [x, y] = atom.getPosition();
                 const atomicRadius = atom.getAtomicRadius();
 
@@ -215,22 +225,9 @@ function MoleculeDrawingView({ solution }) {
 
             renderGrid();
 
-            solution.getBonds().forEach(bond => renderBond(bond));
-            solution.getAtoms().forEach(atom => {
-                if (atom != selectedAtom && atom != hoveredAtom) {
-                    renderAtom(atom);
-                }
-            });
-            
             renderCurrentBond();
-
-            if (selectedAtom) {
-                renderAtom(selectedAtom);
-            }
-
-            if (hoveredAtom) {
-                renderAtom(hoveredAtom);
-            }
+            solution.getBonds().forEach(bond => renderBond(bond));
+            solution.getAtoms().forEach(atom => renderAtom(atom));
             
             renderHighlights();
         };

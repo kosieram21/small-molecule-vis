@@ -28,7 +28,8 @@ class Atom {
     getAtomicRadius() {
         const minRadius = 0;
         const maxRadius = 3.3;
-        return (this.#atomicRadius - minRadius) / (maxRadius - minRadius);
+        const epsilon = 0.00001;
+        return ((this.#atomicRadius - minRadius) / (maxRadius - minRadius)) + epsilon;
     }
 
     getColor() {
