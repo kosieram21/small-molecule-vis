@@ -22,17 +22,16 @@ function MoleculeDrawingView({ solution }) {
 
         const getSolutionCoordinates = (clientX, clientY) => {
             const rect = two.renderer.domElement.getBoundingClientRect();
-            const normalizedX = (clientX - rect.left) / rect.width;
-            const normalizedY = (clientY - rect.top) / rect.height;
-            const solutionX = (normalizedX - two.scene.translation.x / rect.width) / two.scene.scale;
-            const solutionY = (normalizedY - two.scene.translation.y / rect.height) / two.scene.scale;
+            const normalizedX = (clientX - rect.left) / two.width;
+            const normalizedY = (clientY - rect.top) / two.height;
+            const solutionX = (normalizedX - two.scene.translation.x / two.width) / two.scene.scale;
+            const solutionY = (normalizedY - two.scene.translation.y / two.height) / two.scene.scale;
             return [solutionX, solutionY];
         };
 
         const getCanvasCoordinates = (solutionX, solutionY) => {
-            const rect = two.renderer.domElement.getBoundingClientRect();
-            const canvasX = solutionX * rect.width;
-            const canvasY = solutionY * rect.height;
+            const canvasX = solutionX * two.width;
+            const canvasY = solutionY * two.height;
             return [canvasX, canvasY];
         };
 
@@ -85,6 +84,39 @@ function MoleculeDrawingView({ solution }) {
             const dy = by - ay;
             const angle = Math.atan2(dy, dx);
             return angle;
+        };
+
+        const renderGrid = () => {
+            const spacing = 50;
+            const color = 'blue';
+            const lineWidth = 1;
+            const dash = [2, 4];
+
+            const minX = (-two.scene.translation.x) / two.scene.scale;
+            const maxX = (two.width - two.scene.translation.x) / two.scene.scale;
+            const minY = (-two.scene.translation.y) / two.scene.scale;
+            const maxY = (two.height - two.scene.translation.y) / two.scene.scale;
+
+            const startX = Math.floor(minX / spacing) * spacing;
+            const endX = Math.ceil(maxX / spacing) * spacing;
+            const startY = Math.floor(minY / spacing) * spacing;
+            const endY = Math.ceil(maxY / spacing) * spacing;
+    
+            for (let x = startX; x <= endX; x += spacing) {
+                const line = new Two.Line(x, minY, x, maxY);
+                line.stroke = color;
+                line.linewidth = lineWidth;
+                line.dashes = dash;
+                two.add(line);
+            }
+    
+            for (let y = startY; y <= endY; y += spacing) {
+                const line = new Two.Line(minX, y, maxX, y);
+                line.stroke = color;
+                line.linewidth = lineWidth;
+                line.dashes = dash;
+                two.add(line);
+            }
         };
 
         const renderSingleBond = (startX, startY, endX, endY) => {
@@ -179,6 +211,8 @@ function MoleculeDrawingView({ solution }) {
     
         const update = () => {
             two.clear();
+
+            renderGrid();
 
             solution.getBonds().forEach(bond => renderBond(bond));
             solution.getAtoms().forEach(atom => {
@@ -321,8 +355,8 @@ function MoleculeDrawingView({ solution }) {
             hoveredBond = checkBondCollision(event.clientX, event.clientY);
 
             if (panning) {
-                const dx = (event.clientX - prevX); // two.scene.scale;
-                const dy = (event.clientY - prevY); // two.scene.scale;
+                const dx = (event.clientX - prevX);
+                const dy = (event.clientY - prevY);
                 two.scene.translation.set(two.scene.translation.x + dx, two.scene.translation.y + dy);
             }
 
