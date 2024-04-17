@@ -3,9 +3,11 @@ import './Toolbar.css';
 import Select from 'react-select';
 import { useAppContext } from '../AppContext';
 import PeriodicTable from '../Object Model/PeriodicTable';
+import BondTable from '../Object Model/BondTable'
 
 function Toolbar() {
-  const [options, setOptions] = useState([]);
+  const [elementOptions, setElementOptions] = useState([]);
+  const [bondOptions, setBondOptions] = useState([]);
   const { setSelectedElement } = useAppContext();
 
   useEffect(() => {
@@ -14,18 +16,28 @@ function Toolbar() {
         value: element.getName(),
         label: element.getName(),
       }));
-      setOptions(loadedOptions);
+      setElementOptions(loadedOptions);
+    });
+
+    BondTable.load().then(bondTable => {
+      const loadedOptions = bondTable.getBondTypes().map(bondType => ({
+        value: bondType,
+        label: bondType
+      }));
+      setBondOptions(loadedOptions);
     });
   }, []);
 
-  const atomComboBoxOnChange = selectedOption => {
+  const elementComboBoxOnChange = selectedOption => {
     setSelectedElement(selectedOption);
   };
 
   return (
     <div className='toolbar'>
       <span className='label'>Element:</span>
-      <Select className='combo-box' options={options} onChange={atomComboBoxOnChange}/>
+      <Select className='combo-box' options={elementOptions} onChange={elementComboBoxOnChange}/>
+      <span className='label'>Bond:</span>
+      <Select className='combo-box' options={bondOptions}/>
     </div>
   );
 }

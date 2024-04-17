@@ -9,5 +9,6 @@
 }
 
 .toolbar .combo-box {
-    width: 250px;
+    margin-right: 10px;
+    width: 175px;
 }

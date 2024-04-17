@@ -3,7 +3,7 @@ import { useAppContext } from '../AppContext';
 import Two from 'two.js';
 import GraphicsContainer from './GraphicsContainer';
 import PeriodicTable from '../Object Model/PeriodicTable';
-import BondTable from '../Object Model/BondTable'
+import BondTable from '../Object Model/BondTable';
 import Atom from '../Object Model/Atom.js';
 import Bond from '../Object Model/Bond.js';
 
@@ -313,7 +313,7 @@ function MoleculeDrawingView({ solution }) {
             two.scene.scale +=
                 event.deltaY > 0 ? -0.05 : 
                 event.deltaY < 0 ? 0.05 : 0;
-            two.scene.scale = Math.max(two.scene.scale, 0.2);
+            two.scene.scale = Math.max(two.scene.scale, 0.15);
         };
 
         const onMouseDown = (event) => {
