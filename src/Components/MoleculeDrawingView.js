@@ -8,8 +8,9 @@ import Atom from '../Object Model/Atom.js';
 import Bond from '../Object Model/Bond.js';
 
 function MoleculeDrawingView({ solution }) {
-    const { selectedElement } = useAppContext();
+    const { selectedElement, selectedBond } = useAppContext();
     const selectedElementRef = useRef(selectedElement);
+    const selectedBondRef = useRef(selectedBond);
     const twoRef = useRef(new Two());
 
     useEffect(() => {
@@ -397,6 +398,10 @@ function MoleculeDrawingView({ solution }) {
     useEffect(() => {
         selectedElementRef.current = selectedElement;
     }, [selectedElement]);
+
+    useEffect(() => {
+        selectedBondRef.current = selectedBond;
+    }, [selectedBond])
 
     const onResize = (width, height) => {
         const two = twoRef.current;

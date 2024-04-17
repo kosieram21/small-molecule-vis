@@ -8,7 +8,7 @@ import BondTable from '../Object Model/BondTable'
 function Toolbar() {
   const [elementOptions, setElementOptions] = useState([]);
   const [bondOptions, setBondOptions] = useState([]);
-  const { setSelectedElement } = useAppContext();
+  const { setSelectedElement, setSelectedBond } = useAppContext();
 
   useEffect(() => {
     PeriodicTable.load().then(periodicTable => {
@@ -32,12 +32,16 @@ function Toolbar() {
     setSelectedElement(selectedOption);
   };
 
+  const bondComboBoxOnChange = selectedOption => {
+    setSelectedBond(selectedOption);
+  }
+
   return (
     <div className='toolbar'>
       <span className='label'>Element:</span>
       <Select className='combo-box' options={elementOptions} onChange={elementComboBoxOnChange}/>
       <span className='label'>Bond:</span>
-      <Select className='combo-box' options={bondOptions}/>
+      <Select className='combo-box' options={bondOptions} onChange={bondComboBoxOnChange}/>
     </div>
   );
 }

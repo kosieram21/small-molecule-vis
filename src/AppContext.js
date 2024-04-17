@@ -4,7 +4,8 @@ const AppContext = createContext();
 
 export const AppContextProvider = ({ children }) => {
     const [selectedElement, setSelectedElement] = useState("");
-    const value = { selectedElement, setSelectedElement };
+    const [selectedBond, setSelectedBond] = useState("");
+    const value = { selectedElement, setSelectedElement, selectedBond, setSelectedBond };
     return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
 };
 

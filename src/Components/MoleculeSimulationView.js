@@ -6,7 +6,7 @@ import GraphicsContainer from './GraphicsContainer';
 function MoleculeSimulationView({ solution }) {
   const sceneRef = useRef(new THREE.Scene());
   const cameraRef = useRef(new THREE.PerspectiveCamera(75, 1, 0.1, 1000));
-  const rendererRef = useRef(new THREE.WebGLRenderer());
+  const rendererRef = useRef(new THREE.WebGLRenderer({ antialias: true, powerPreference: "high-performance" }));
   const controlsRef = useRef(new ArcballControls(cameraRef.current, rendererRef.current.domElement))
 
   useEffect(() => {
