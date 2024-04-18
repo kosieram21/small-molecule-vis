@@ -8,7 +8,7 @@ import Atom from '../Object Model/Atom.js';
 import Bond from '../Object Model/Bond.js';
 
 function MoleculeDrawingView({ solution }) {
-    const { selectedElement, selectedBond, gridEnabled, setToastOpen } = useAppContext();
+    const { selectedElement, selectedBond, gridEnabled, addAlert } = useAppContext();
     const selectedElementRef = useRef(selectedElement);
     const selectedBondRef = useRef(selectedBond);
     const gridEnabledRef = useRef(gridEnabled);
@@ -296,7 +296,7 @@ function MoleculeDrawingView({ solution }) {
                             bondInfo.getBondLength(),
                             bondInfo.getBondType()));
                     } else {
-                        setToastOpen(true);
+                        addAlert(`${selectedAtom.getSymbol()}-${hoveredAtom.getSymbol()} is an invalid bond!`, 'error');
                     }
                     selectedAtom = null;
                 });
@@ -363,7 +363,7 @@ function MoleculeDrawingView({ solution }) {
 
         const onMouseMove = (event) => {
             event.preventDefault();
-            
+
             hoveredAtom = checkAtomCollision(event.clientX, event.clientY);
             hoveredBond = checkBondCollision(event.clientX, event.clientY);
 

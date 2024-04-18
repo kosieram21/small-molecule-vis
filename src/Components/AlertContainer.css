@@ -1,0 +1,14 @@
+.alert-container {
+    position: fixed;
+    bottom: 20px;
+    left: 20px;
+    z-index: 1;
+}
+
+.alert {
+    width: 250px;
+    height: 40px;
+    display: flex; 
+    align-items: center;
+    justify-content: center;
+}
