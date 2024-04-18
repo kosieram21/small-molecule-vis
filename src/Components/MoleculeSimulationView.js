@@ -138,7 +138,7 @@ function MoleculeSimulationView({ solution }) {
   const onResize = (width, height) => {
     const renderer = rendererRef.current;
     renderer.setSize(width, height);
-  }
+  };
 
   return <GraphicsContainer renderer={rendererRef.current} onResize={onResize}/>;
 }

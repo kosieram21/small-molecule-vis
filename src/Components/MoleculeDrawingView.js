@@ -17,6 +17,8 @@ function MoleculeDrawingView({ solution }) {
     useEffect(() => {
         const two = twoRef.current;
 
+        two.scene.translation.set(two.width / 2, two.height / 2);
+
         let panning = false;
         let prevX, prevY;
         let selectedAtom, hoveredAtom;
@@ -93,9 +95,8 @@ function MoleculeDrawingView({ solution }) {
 
         const renderGrid = () => {
             if (gridEnabledRef.current) {
-                const rect = two.renderer.domElement.getBoundingClientRect();
-                const spacingX = (two.width - rect.left) / 10;
-                const spacingY = (two.height - rect.top) / 10;
+                const spacingX = two.width / 10;
+                const spacingY = two.height / 10;
                 const color = 'blue';
                 const lineWidth = 1;
                 const dash = [2, 4];
@@ -359,14 +360,17 @@ function MoleculeDrawingView({ solution }) {
             hoveredBond = checkBondCollision(event.clientX, event.clientY);
 
             if (panning) {
-                const dx = (event.clientX - prevX);
-                const dy = (event.clientY - prevY);
-                two.scene.translation.set(two.scene.translation.x + dx, two.scene.translation.y + dy);
+                const dx =  event.clientX - prevX;
+                const dy = event.clientY - prevY;
+                two.scene.translation.set(
+                    two.scene.translation.x + dx, 
+                    two.scene.translation.y + dy
+                );
             }
 
             prevX = event.clientX;
             prevY = event.clientY;
-        }
+        };
 
         const onContextMenu = (event) => {
             event.preventDefault();
@@ -404,18 +408,28 @@ function MoleculeDrawingView({ solution }) {
 
     useEffect(() => {
         selectedBondRef.current = selectedBond;
-    }, [selectedBond])
+    }, [selectedBond]);
 
     useEffect(() => {
         gridEnabledRef.current = gridEnabled;
-    }, [gridEnabled])
+    }, [gridEnabled]);
 
     const onResize = (width, height) => {
         const two = twoRef.current;
+        const prevWidth = two.width;
+        const prevHeight = two.height;
+
+        const scaleWidth = width / prevWidth;
+        const scaleHeight = height / prevHeight;
+
+        two.scene.translation.set(
+            two.scene.translation.x * scaleWidth,
+            two.scene.translation.y * scaleHeight
+        );
+
         two.width = width;
         two.height = height;
-        two.scene.translation.set(width / 2, height / 2);
-    }
+    };
 
     return <GraphicsContainer renderer={twoRef.current.renderer} onResize={onResize}/>;
 }
