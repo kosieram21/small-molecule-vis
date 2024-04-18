@@ -423,8 +423,8 @@ function MoleculeDrawingView({ solution }) {
     const onResize = (width, height) => {
         const two = twoRef.current;
 
-        const prevWidth = two.width;
-        const prevHeight = two.height;
+        const prevWidth = two.width || 1;
+        const prevHeight = two.height || 1;
 
         const scaleWidth = width / prevWidth;
         const scaleHeight = height / prevHeight;
