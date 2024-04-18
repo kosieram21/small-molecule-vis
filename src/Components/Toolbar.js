@@ -33,7 +33,6 @@ function Toolbar() {
   }, []);
 
   const elementComboBoxOnChange = (event, selectedOption) => {
-    console.log(event);
     setSelectedElement(selectedOption ? selectedOption.value : selectedOption);
   };
 
