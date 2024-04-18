@@ -14,9 +14,21 @@
 }
 
 .toolbar .check-box .MuiCheckbox-root {
-    margin-top: 12px;
+    margin-top: 10px;
 }
 
 .toolbar .check-box .MuiFormControlLabel-label {
-    margin-top: 12px;
+    margin-top: 10px;
+}
+
+.toolbar .switch .MuiFormControlLabel-root {
+    align-items: flex-start;
+}
+
+.toolbar .switch .MuiSwitch-root {
+    margin-top: 10px; /* Adjust switch knob position */
+}
+
+.toolbar .switch .MuiFormControlLabel-label {
+    margin-top: 10px; /* Align label */
 }

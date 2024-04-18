@@ -4,6 +4,7 @@ import TextField from '@mui/material/TextField';
 import Autocomplete from '@mui/material/Autocomplete';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import Checkbox from '@mui/material/Checkbox';
+import Switch from '@mui/material/Switch';
 import { useAppContext } from '../AppContext';
 import PeriodicTable from '../Object Model/PeriodicTable';
 import BondTable from '../Object Model/BondTable'
@@ -49,8 +50,10 @@ function Toolbar() {
         renderInput={(params) => <TextField {...params} label="Element" variant="standard" />}/>
       <Autocomplete className='combo-box' options={bondOptions} onChange={bondComboBoxOnChange}
         renderInput={(params) => <TextField {...params} label="Bond" variant="standard"/>}/>
-      <FormControlLabel className='check-box' value="end" label="Grid" labelPlacement="start"
+      <FormControlLabel className='check-box' label="Grid" labelPlacement="start"
         control={<Checkbox checked={gridEnabled} onChange={gridCheckBoxOnChange}/>}/>
+      <FormControlLabel className='switch' label="Simulation" labelPlacement="start"
+        control={<Switch/>}/>
     </div>
   );
 }
