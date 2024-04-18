@@ -8,7 +8,7 @@ import Atom from '../Object Model/Atom.js';
 import Bond from '../Object Model/Bond.js';
 
 function MoleculeDrawingView({ solution }) {
-    const { selectedElement, selectedBond, gridEnabled } = useAppContext();
+    const { selectedElement, selectedBond, gridEnabled, setToastOpen } = useAppContext();
     const selectedElementRef = useRef(selectedElement);
     const selectedBondRef = useRef(selectedBond);
     const gridEnabledRef = useRef(gridEnabled);
@@ -295,6 +295,8 @@ function MoleculeDrawingView({ solution }) {
                         solution.addBond(new Bond(selectedAtom, hoveredAtom,
                             bondInfo.getBondLength(),
                             bondInfo.getBondType()));
+                    } else {
+                        setToastOpen(true);
                     }
                     selectedAtom = null;
                 });

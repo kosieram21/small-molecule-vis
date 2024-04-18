@@ -6,11 +6,13 @@ export const AppContextProvider = ({ children }) => {
     const [selectedElement, setSelectedElement] = useState("");
     const [selectedBond, setSelectedBond] = useState("");
     const [gridEnabled, setGridEnabled] = useState(true);
+    const [toastOpen, setToastOpen] = useState(false);
     
     const value = { 
         selectedElement, setSelectedElement, 
         selectedBond, setSelectedBond, 
-        gridEnabled, setGridEnabled 
+        gridEnabled, setGridEnabled,
+        toastOpen, setToastOpen
     };
 
     return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
