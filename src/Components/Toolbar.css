@@ -26,9 +26,9 @@
 }
 
 .toolbar .switch .MuiSwitch-root {
-    margin-top: 10px; /* Adjust switch knob position */
+    margin-top: 10px;
 }
 
 .toolbar .switch .MuiFormControlLabel-label {
-    margin-top: 10px; /* Align label */
+    margin-top: 10px;
 }
