@@ -218,20 +218,21 @@ function MoleculeDrawingView({ solution }) {
             }
         };
 
+        const renderMolecules = () => {
+            solution.getBonds().forEach(bond => renderBond(bond));
+            solution.getAtoms().forEach(atom => renderAtom(atom));
+        };
+
         const renderHighlights = () => {
             solution.getBonds().forEach(bond => renderBondHighlights(bond));
             solution.getAtoms().forEach(atom => renderAtomHighlights(atom));
-        }
+        };
     
         const update = () => {
-            two.clear();
-
+            two.clear();  
             renderGrid();
-
             renderCurrentBond();
-            solution.getBonds().forEach(bond => renderBond(bond));
-            solution.getAtoms().forEach(atom => renderAtom(atom));
-            
+            renderMolecules();
             renderHighlights();
         };
 

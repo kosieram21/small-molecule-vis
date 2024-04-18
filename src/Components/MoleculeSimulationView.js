@@ -61,6 +61,11 @@ function MoleculeSimulationView({ solution }) {
       }
     };
 
+    const setupLights = () => {
+      scene.add(ambientLight);
+      scene.add(camera);
+    };
+
     const renderSingleBond = (startX, startY, startZ, endX, endY, endZ) => {
       const [sceneStartX, sceneStartY, sceneStartZ] = getSceneCoordinates(startX, startY, startZ);
       const [sceneEndX, sceneEndY, sceneEndZ] = getSceneCoordinates(endX, endY, endZ);
@@ -106,19 +111,18 @@ function MoleculeSimulationView({ solution }) {
       scene.add(sphere);
     };
 
+    const renderMolecules = () => {
+      solution.getAtoms().forEach(atom => renderAtom(atom));
+      solution.getBonds().forEach(bond => renderBond(bond));
+    };
+
     let animationFrameId;
     const animate = () => {
       clearScene();
-
-      scene.add(ambientLight);
-      scene.add(camera);
-
-      solution.getAtoms().forEach(atom => renderAtom(atom));
-      solution.getBonds().forEach(bond => renderBond(bond));
-      
+      setupLights();
+      renderMolecules();
       renderer.render(scene, camera);
       controls.update();
-      
       animationFrameId = requestAnimationFrame(animate);
     };
 
