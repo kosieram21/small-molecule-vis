@@ -9,26 +9,17 @@
     width: 200px;
 }
 
+.toolbar .switch .MuiFormControlLabel-root,
 .toolbar .check-box .MuiFormControlLabel-root {
     align-items: flex-start;
 }
 
+.toolbar .switch .MuiSwitch-root,
 .toolbar .check-box .MuiCheckbox-root {
     margin-top: 10px;
 }
 
+.toolbar .switch .MuiFormControlLabel-label,
 .toolbar .check-box .MuiFormControlLabel-label {
-    margin-top: 10px;
-}
-
-.toolbar .switch .MuiFormControlLabel-root {
-    align-items: flex-start;
-}
-
-.toolbar .switch .MuiSwitch-root {
-    margin-top: 10px;
-}
-
-.toolbar .switch .MuiFormControlLabel-label {
     margin-top: 10px;
 }
