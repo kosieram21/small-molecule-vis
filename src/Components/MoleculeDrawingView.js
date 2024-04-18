@@ -297,9 +297,9 @@ function MoleculeDrawingView({ solution }) {
     
         const onClick = (event) => {
             PeriodicTable.load().then(periodicTable => {
-                if (selectedElementRef.current.value) {
+                if (selectedElementRef.current) {
                     const [solutionX, solutionY] = getSolutionCoordinates(event.clientX, event.clientY);
-                    const element = periodicTable.getElement(selectedElementRef.current.value);
+                    const element = periodicTable.getElement(selectedElementRef.current);
                     hoveredAtom = new Atom([solutionX, solutionY, 0], 
                         element.getSymbol(), 
                         element.getAtomicNumber(),

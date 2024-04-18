@@ -33,11 +33,12 @@ function Toolbar() {
   }, []);
 
   const elementComboBoxOnChange = (event, selectedOption) => {
-    setSelectedElement(selectedOption);
+    console.log(event);
+    setSelectedElement(selectedOption ? selectedOption.value : selectedOption);
   };
 
   const bondComboBoxOnChange = (event, selectedOption) => {
-    setSelectedBond(selectedOption);
+    setSelectedBond(selectedOption ? selectedOption.value : selectedOption);
   }
 
   const gridCheckBoxOnChange = (event) => {
