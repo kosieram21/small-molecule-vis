@@ -93,7 +93,9 @@ function MoleculeDrawingView({ solution }) {
 
         const renderGrid = () => {
             if (gridEnabledRef.current) {
-                const spacing = 50;
+                const rect = two.renderer.domElement.getBoundingClientRect();
+                const spacingX = (two.width - rect.left) / 10;
+                const spacingY = (two.height - rect.top) / 10;
                 const color = 'blue';
                 const lineWidth = 1;
                 const dash = [2, 4];
@@ -103,12 +105,12 @@ function MoleculeDrawingView({ solution }) {
                 const minY = (-two.scene.translation.y) / two.scene.scale;
                 const maxY = (two.height - two.scene.translation.y) / two.scene.scale;
 
-                const startX = Math.floor(minX / spacing) * spacing;
-                const endX = Math.ceil(maxX / spacing) * spacing;
-                const startY = Math.floor(minY / spacing) * spacing;
-                const endY = Math.ceil(maxY / spacing) * spacing;
+                const startX = Math.floor(minX / spacingX) * spacingX;
+                const endX = Math.ceil(maxX / spacingX) * spacingX;
+                const startY = Math.floor(minY / spacingY) * spacingY;
+                const endY = Math.ceil(maxY / spacingY) * spacingY;
     
-                for (let x = startX; x <= endX; x += spacing) {
+                for (let x = startX; x <= endX; x += spacingX) {
                     const line = new Two.Line(x, minY, x, maxY);
                     line.stroke = color;
                     line.linewidth = lineWidth;
@@ -116,7 +118,7 @@ function MoleculeDrawingView({ solution }) {
                     two.add(line);
                 }
     
-                for (let y = startY; y <= endY; y += spacing) {
+                for (let y = startY; y <= endY; y += spacingY) {
                     const line = new Two.Line(minX, y, maxX, y);
                     line.stroke = color;
                     line.linewidth = lineWidth;
