@@ -362,6 +362,8 @@ function MoleculeDrawingView({ solution }) {
         };
 
         const onMouseMove = (event) => {
+            event.preventDefault();
+            
             hoveredAtom = checkAtomCollision(event.clientX, event.clientY);
             hoveredBond = checkBondCollision(event.clientX, event.clientY);
 
