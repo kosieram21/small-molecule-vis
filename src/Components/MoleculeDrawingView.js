@@ -272,7 +272,11 @@ function MoleculeDrawingView({ solution }) {
                 const [canvasAtom2X, canvasAtom2Y] = getCanvasCoordinates(x2, y2);
                 const lineWidth = getCanvasLineWidth();
         
-                const distance = pointToSegmentDistance(canvasClientX, canvasClientY, canvasAtom1X, canvasAtom1Y, canvasAtom2X, canvasAtom2Y);
+                const distance = pointToSegmentDistance(
+                    canvasClientX, canvasClientY, 
+                    canvasAtom1X, canvasAtom1Y, 
+                    canvasAtom2X, canvasAtom2Y
+                );
 
                 if (distance < lineWidth) {
                     return bond;
@@ -416,6 +420,7 @@ function MoleculeDrawingView({ solution }) {
 
     const onResize = (width, height) => {
         const two = twoRef.current;
+
         const prevWidth = two.width;
         const prevHeight = two.height;
 
