@@ -7,13 +7,10 @@ export const AppContextProvider = ({ children }) => {
     const [selectedBond, setSelectedBond] = useState("");
     const [gridEnabled, setGridEnabled] = useState(true);
     const [alerts, setAlerts] = useState([]);
-    
+
     const addAlert = (message, severity = 'info') => {
         const newAlert = { id: new Date().getTime(), message, severity };
-        setAlerts(alerts => {
-            const newAlerts = [...alerts, newAlert];
-            return newAlerts.length > 4 ? newAlerts.slice(1) : newAlerts;
-        });
+        setAlerts(alerts => [...alerts, newAlert]);
     };
     
     const removeAlert = (id) => {
