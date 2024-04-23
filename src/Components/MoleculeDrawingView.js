@@ -70,6 +70,12 @@ function MoleculeDrawingView({ solution }) {
             return angle;
         };
 
+        const perpendicularVector = (x, y, magnitude) => {
+            const perpX = -y * magnitude;
+            const perpY = x * magnitude;
+            return [perpX, perpY]
+        };
+
         const euclideanDistance = (ax, ay, bx, by) => {
             const [dx, dy] = vectorDirection(ax, ay, bx, by);
             const distance = Math.sqrt(dx * dx + dy * dy);
@@ -159,10 +165,7 @@ function MoleculeDrawingView({ solution }) {
             const canvasLineWidth = getCanvasLineWidth();
 
             const [dx, dy] = vectorDirection(canvasStartX, canvasStartY, canvasEndX, canvasEndY, true);
-
-            const offsetMagnitude = canvasLineWidth;
-            const perpX = -dy * offsetMagnitude;
-            const perpY = dx * offsetMagnitude;
+            const [perpX, perpY] = perpendicularVector(dx, dy, canvasLineWidth);
 
             const ax = canvasStartX + dx * canvasRadius1;
             const ay = canvasStartY + dy * canvasRadius1;
@@ -199,10 +202,7 @@ function MoleculeDrawingView({ solution }) {
             const canvasLineWidth = getCanvasLineWidth();
 
             const [dx, dy] = vectorDirection(canvasStartX, canvasStartY, canvasEndX, canvasEndY, true);
-
-            const offsetMagnitude = canvasLineWidth * 2;
-            const perpX = -dy * offsetMagnitude;
-            const perpY = dx * offsetMagnitude;
+            const [perpX, perpY] = perpendicularVector(dx, dy, canvasLineWidth * 2);
 
             const ax = canvasStartX + dx * canvasRadius1;
             const ay = canvasStartY + dy * canvasRadius1;
