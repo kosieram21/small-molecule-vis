@@ -19,7 +19,7 @@ function MoleculeDrawingView({ solution }) {
 
         two.scene.translation.set(two.width / 2, two.height / 2);
 
-        let panning = false;
+        let panning = false, dragging = false;
         let prevX, prevY;
         let selectedAtom, hoveredAtom;
         let selectedBond, hoveredBond;
@@ -376,8 +376,26 @@ function MoleculeDrawingView({ solution }) {
                 );
             }
 
+            if (!panning && dragging && selectedAtom) {
+                const [solutionX, solutionY] = getSolutionCoordinates(event.clientX, event.clientY);
+                selectedAtom.setXPosition(solutionX);
+                selectedAtom.setYPosition(solutionY);
+            }
+
             prevX = event.clientX;
             prevY = event.clientY;
+        };
+
+        const onKeyDown = (event) => {
+            if (event.code === 'Space') {
+                dragging = true;
+            }
+        };
+
+        const onKeyUp = (event) => {
+            if (event.code === 'Space') {
+                dragging = false;
+            }
         };
 
         const onContextMenu = (event) => {
@@ -394,6 +412,8 @@ function MoleculeDrawingView({ solution }) {
         two.renderer.domElement.addEventListener('contextmenu', onContextMenu);
 
         window.addEventListener('mouseup', onMouseUp);
+        window.addEventListener('keydown', onKeyDown);
+        window.addEventListener('keyup', onKeyUp);
 
         return () => {
             two.pause();
@@ -407,6 +427,8 @@ function MoleculeDrawingView({ solution }) {
             two.renderer.domElement.removeEventListener('contextmenu', onContextMenu);
 
             window.removeEventListener('mouseup', onMouseUp);
+            window.removeEventListener('keydown', onkeydown);
+            window.removeEventListener('keyup', onkeyup);
         };
     }, [solution]);
 

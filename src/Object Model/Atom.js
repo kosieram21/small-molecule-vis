@@ -17,6 +17,22 @@ class Atom {
         return this.#position;
     }
 
+    setPosition(position) {
+        this.#position = position;
+    }
+
+    setXPosition(xPosition) {
+        this.#position[0] = xPosition;
+    }
+
+    setYPosition(yPosition) {
+        this.#position[1] = yPosition;
+    }
+
+    setZPosition(zPosition) {
+        this.#position[2] = zPosition;
+    }
+
     getSymbol() {
         return this.#symbol;
     }
