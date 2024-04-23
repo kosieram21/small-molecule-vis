@@ -59,7 +59,7 @@ class BondTable {
         }
     }
 
-    conatainsSingleBond(element1, element2) {
+    containsSingleBond(element1, element2) {
         return this.#containsBond(this.#singleBonds, element1, element2);
     }
 

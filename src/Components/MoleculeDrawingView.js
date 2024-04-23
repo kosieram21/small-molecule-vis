@@ -50,7 +50,7 @@ function MoleculeDrawingView({ solution }) {
         };
 
         const getCanvasLineWidth = () => {
-            return 5;
+            return 4;
         };
 
         const getHighlightColor = () => {
@@ -135,6 +135,7 @@ function MoleculeDrawingView({ solution }) {
 
             const canvasRadius1 = getCanvasRadius(radius1);
             const canvasRadius2 = getCanvasRadius(radius2);
+            const canvasLineWidth = getCanvasLineWidth();
 
             const [dx, dy] = vectorDirection(canvasStartX, canvasStartY, canvasEndX, canvasEndY, true);
 
@@ -145,26 +146,132 @@ function MoleculeDrawingView({ solution }) {
 
             const line = new Two.Line(ax, ay, bx, by);
             line.stroke = 'black';
-            line.linewidth = getCanvasLineWidth();
+            line.linewidth = canvasLineWidth;
             two.add(line);
+        };
+
+        const renderDoubleBond = (startX, startY, endX, endY, radius1, radius2) => {
+            const [canvasStartX, canvasStartY] = getCanvasCoordinates(startX, startY);
+            const [canvasEndX, canvasEndY] = getCanvasCoordinates(endX, endY);
+
+            const canvasRadius1 = getCanvasRadius(radius1);
+            const canvasRadius2 = getCanvasRadius(radius2);
+            const canvasLineWidth = getCanvasLineWidth();
+
+            const [dx, dy] = vectorDirection(canvasStartX, canvasStartY, canvasEndX, canvasEndY, true);
+
+            const offsetMagnitude = canvasLineWidth;
+            const perpX = -dy * offsetMagnitude;
+            const perpY = dx * offsetMagnitude;
+
+            const ax = canvasStartX + dx * canvasRadius1;
+            const ay = canvasStartY + dy * canvasRadius1;
+            const bx = canvasEndX - dx * canvasRadius2;
+            const by = canvasEndY - dy * canvasRadius2;
+
+            const ax1 = ax + perpX;
+            const ay1 = ay + perpY;
+            const bx1 = bx + perpX;
+            const by1 = by + perpY;
+
+            const ax2 = ax - perpX;
+            const ay2 = ay - perpY;
+            const bx2 = bx - perpX;
+            const by2 = by - perpY;
+
+            const line1 = new Two.Line(ax1, ay1, bx1, by1);
+            line1.stroke = 'black';
+            line1.linewidth = canvasLineWidth;
+            two.add(line1);
+            
+            const line2 = new Two.Line(ax2, ay2, bx2, by2);
+            line2.stroke = 'black';
+            line2.linewidth = canvasLineWidth;
+            two.add(line2);
+        };
+
+        const renderTripleBond = (startX, startY, endX, endY, radius1, radius2) => {
+            const [canvasStartX, canvasStartY] = getCanvasCoordinates(startX, startY);
+            const [canvasEndX, canvasEndY] = getCanvasCoordinates(endX, endY);
+
+            const canvasRadius1 = getCanvasRadius(radius1);
+            const canvasRadius2 = getCanvasRadius(radius2);
+            const canvasLineWidth = getCanvasLineWidth();
+
+            const [dx, dy] = vectorDirection(canvasStartX, canvasStartY, canvasEndX, canvasEndY, true);
+
+            const offsetMagnitude = canvasLineWidth * 2;
+            const perpX = -dy * offsetMagnitude;
+            const perpY = dx * offsetMagnitude;
+
+            const ax = canvasStartX + dx * canvasRadius1;
+            const ay = canvasStartY + dy * canvasRadius1;
+            const bx = canvasEndX - dx * canvasRadius2;
+            const by = canvasEndY - dy * canvasRadius2;
+
+            const ax1 = ax + perpX;
+            const ay1 = ay + perpY;
+            const bx1 = bx + perpX;
+            const by1 = by + perpY;
+
+            const ax2 = ax - perpX;
+            const ay2 = ay - perpY;
+            const bx2 = bx - perpX;
+            const by2 = by - perpY;
+
+            const line1 = new Two.Line(ax, ay, bx, by);
+            line1.stroke = 'black';
+            line1.linewidth = canvasLineWidth;
+            two.add(line1);
+
+            const line2 = new Two.Line(ax1, ay1, bx1, by1);
+            line2.stroke = 'black';
+            line2.linewidth = canvasLineWidth;
+            two.add(line2);
+            
+            const line3 = new Two.Line(ax2, ay2, bx2, by2);
+            line3.stroke = 'black';
+            line3.linewidth = canvasLineWidth;
+            two.add(line3);
+        };
+
+        const renderBondByType = (bondType, startX, startY, endX, endY, radius1, radius2) => {
+            switch(bondType) {
+                case 'Single':
+                    renderSingleBond(startX, startY, endX, endY, radius1, radius2);
+                    break;
+                case 'Double':
+                    renderDoubleBond(startX, startY, endX, endY, radius1, radius2);
+                    break;
+                case 'Triple':
+                    renderTripleBond(startX, startY, endX, endY, radius1, radius2);
+                    break;
+                default:
+                    addAlert(`${bondType} is an invalid bond type!`, 'error');
+                    break;
+            }
         };
 
         const renderCurrentBond = () => {
             if (selectedAtom && selectedAtom != hoveredAtom) {
-                const [startX, startY] = selectedAtom.getPosition();
-                const [endX, endY] = hoveredAtom ? hoveredAtom.getPosition() : getSolutionCoordinates(prevX, prevY);
-                const radius1 = selectedAtom.getAtomicRadius();
-                const radius2 = hoveredAtom ? hoveredAtom.getAtomicRadius() : 0;
-                renderSingleBond(startX, startY, endX, endY, radius1, radius2);
+                const bondType = selectedBondRef.current;
+                if (bondType) {
+                    const [startX, startY] = selectedAtom.getPosition();
+                    const [endX, endY] = hoveredAtom ? hoveredAtom.getPosition() : getSolutionCoordinates(prevX, prevY);
+                    const radius1 = selectedAtom.getAtomicRadius();
+                    const radius2 = hoveredAtom ? hoveredAtom.getAtomicRadius() : 0;
+                    renderBondByType(bondType, startX, startY, endX, endY, radius1, radius2);
+                }
             }
         };
 
         const renderBond = (bond) => {
+            const bondType = bond.getType();
             const [startX, startY] = bond.getAtom1().getPosition();
             const [endX, endY] = bond.getAtom2().getPosition();
             const radius1 = bond.getAtom1().getAtomicRadius();
             const radius2 = bond.getAtom2().getAtomicRadius();
-            renderSingleBond(startX, startY, endX, endY, radius1, radius2);
+            renderBondByType(bondType, startX, startY, endX, endY, radius1, radius2);
         };
 
         const renderAtom = (atom) => {
@@ -286,22 +393,62 @@ function MoleculeDrawingView({ solution }) {
             return null;
         };
 
-        const checkBondCoherence = () => {
-            if (selectedAtom && hoveredAtom && selectedAtom != hoveredAtom) {
-                BondTable.load().then(bondTable => {
-                    const bondHandle = bondTable.conatainsSingleBond(selectedAtom.getSymbol(), hoveredAtom.getSymbol());
-                    if (bondHandle) {
-                        const bondInfo = bondTable.getSingleBondInformation(bondHandle);
-                        solution.addBond(new Bond(selectedAtom, hoveredAtom,
-                            bondInfo.getBondLength(),
-                            bondInfo.getBondType()));
-                    } else {
-                        addAlert(`${selectedAtom.getSymbol()}-${hoveredAtom.getSymbol()} is an invalid bond!`, 'error');
-                    }
-                    selectedAtom = null;
-                });
+        const getSingleBondInfo = (bondTable, atom1, atom2) => {
+            const bondHandle = bondTable.containsSingleBond(atom1.getSymbol(), atom2.getSymbol());
+            if (bondHandle) {
+                return bondTable.getSingleBondInformation(bondHandle);
             } else {
-                selectedAtom = null;
+                addAlert(`${selectedAtom.getSymbol()}-${hoveredAtom.getSymbol()} is an invalid single bond!`, 'warning');
+            }
+            return null;
+        };
+
+        const getDoubleBondInfo = (bondTable, atom1, atom2) => {
+            const bondHandle = bondTable.containsDoubleBond(atom1.getSymbol(), atom2.getSymbol());
+            if (bondHandle) {
+                return bondTable.getDoubleBondInformation(bondHandle);
+            } else {
+                addAlert(`${selectedAtom.getSymbol()}-${hoveredAtom.getSymbol()} is an invalid double bond!`, 'warning');
+            }
+            return null;
+        };
+
+        const getTripleBondInfo = (bondTable, atom1, atom2) => {
+            const bondHandle = bondTable.containsTripleBond(atom1.getSymbol(), atom2.getSymbol());
+            if (bondHandle) {
+                return bondTable.getTripleBondInformation(bondHandle);
+            } else {
+                addAlert(`${selectedAtom.getSymbol()}-${hoveredAtom.getSymbol()} is an invalid triple bond!`, 'warning');
+            }
+            return null;
+        };
+
+        const getBondInfo = (bondType, atom1, atom2) => {
+            return BondTable.load().then(bondTable => {
+                switch(bondType) {
+                    case 'Single':
+                        return getSingleBondInfo(bondTable, atom1, atom2);
+                    case 'Double':
+                        return getDoubleBondInfo(bondTable, atom1, atom2);
+                    case 'Triple':
+                        return getTripleBondInfo(bondTable, atom1, atom2);
+                    default:
+                        addAlert(`${bondType} is an invalid bond type!`, 'error');
+                        break;
+                }
+                return null;
+            });
+        };
+
+        const checkBondCoherence = async () => {
+            if (selectedAtom && hoveredAtom && selectedAtom != hoveredAtom) {
+                const bondType = selectedBondRef.current;
+                const bondInfo = await getBondInfo(bondType, selectedAtom, hoveredAtom);
+                if (bondInfo) {
+                    solution.addBond(new Bond(selectedAtom, hoveredAtom,
+                        bondInfo.getBondLength(),
+                        bondInfo.getBondType()));
+                }
             }
         };
     
@@ -352,8 +499,9 @@ function MoleculeDrawingView({ solution }) {
             prevY = event.clientY;
         };
 
-        const onMouseUp = (event) => {
-            checkBondCoherence();
+        const onMouseUp = async (event) => {
+            await checkBondCoherence();
+            selectedAtom = null;
             selectedBond = null;
 
             if (event.button === 2) {
