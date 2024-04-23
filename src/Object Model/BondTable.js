@@ -47,7 +47,7 @@ class BondTable {
         this.#tripleBonds = {};
     }
 
-    #containsBond(bondDictionary, element1, element2) {
+    #resolveKey(bondDictionary, element1, element2) {
         const key1 = `${element1}${element2}`;
         const key2 = `${element2}${element1}`;
         if (bondDictionary.hasOwnProperty(key1)) {
@@ -59,28 +59,23 @@ class BondTable {
         }
     }
 
-    containsSingleBond(element1, element2) {
-        return this.#containsBond(this.#singleBonds, element1, element2);
+    #getBondDictionary(bondType) {
+        switch (bondType) {
+            case 'Single':
+                return this.#singleBonds;
+            case 'Double':
+                return this.#doubleBonds;
+            case 'Triple':
+                return this.#tripleBonds;
+            default:
+                throw new Error(`${bondType} is an invalid bond type!`);
+        }
     }
 
-    containsDoubleBond(element1, element2) {
-        return this.#containsBond(this.#doubleBonds, element1, element2);
-    }
-
-    containsTripleBond(element1, element2) {
-        return this.#containsBond(this.#tripleBonds, element1, element2);
-    }
-
-    getSingleBondInformation(bondHandle) {
-        return this.#singleBonds[bondHandle];
-    }
-
-    getDoubleBondInformation(bondHandle) {
-        return this.#doubleBonds[bondHandle];
-    }
-
-    getTripleBondInformation(bondHandle) {
-        return this.#tripleBonds[bondHandle];
+    getBondInformation(element1, element2, bondType) {
+        const bondDictionary = this.#getBondDictionary(bondType);
+        const key = this.#resolveKey(bondDictionary, element1, element2);
+        return key ? bondDictionary[key] : null;
     }
 
     getBondTypes() {

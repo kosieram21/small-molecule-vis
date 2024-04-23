@@ -393,63 +393,27 @@ function MoleculeDrawingView({ solution }) {
             return null;
         };
 
-        const getSingleBondInfo = (bondTable, atom1, atom2) => {
-            const bondHandle = bondTable.containsSingleBond(atom1.getSymbol(), atom2.getSymbol());
-            if (bondHandle) {
-                return bondTable.getSingleBondInformation(bondHandle);
-            } else {
-                addAlert(`${selectedAtom.getSymbol()}-${hoveredAtom.getSymbol()} is an invalid single bond!`, 'warning');
-            }
-            return null;
-        };
-
-        const getDoubleBondInfo = (bondTable, atom1, atom2) => {
-            const bondHandle = bondTable.containsDoubleBond(atom1.getSymbol(), atom2.getSymbol());
-            if (bondHandle) {
-                return bondTable.getDoubleBondInformation(bondHandle);
-            } else {
-                addAlert(`${selectedAtom.getSymbol()}-${hoveredAtom.getSymbol()} is an invalid double bond!`, 'warning');
-            }
-            return null;
-        };
-
-        const getTripleBondInfo = (bondTable, atom1, atom2) => {
-            const bondHandle = bondTable.containsTripleBond(atom1.getSymbol(), atom2.getSymbol());
-            if (bondHandle) {
-                return bondTable.getTripleBondInformation(bondHandle);
-            } else {
-                addAlert(`${selectedAtom.getSymbol()}-${hoveredAtom.getSymbol()} is an invalid triple bond!`, 'warning');
-            }
-            return null;
-        };
-
-        const getBondInfo = (bondType, atom1, atom2) => {
-            return BondTable.load().then(bondTable => {
-                switch(bondType) {
-                    case 'Single':
-                        return getSingleBondInfo(bondTable, atom1, atom2);
-                    case 'Double':
-                        return getDoubleBondInfo(bondTable, atom1, atom2);
-                    case 'Triple':
-                        return getTripleBondInfo(bondTable, atom1, atom2);
-                    default:
-                        addAlert(`${bondType} is an invalid bond type!`, 'error');
-                        break;
-                }
-                return null;
-            });
-        };
-
         const checkBondCoherence = async () => {
-            if (selectedAtom && hoveredAtom && selectedAtom != hoveredAtom) {
+            return BondTable.load().then(bondTable => {
                 const bondType = selectedBondRef.current;
-                const bondInfo = await getBondInfo(bondType, selectedAtom, hoveredAtom);
-                if (bondInfo) {
-                    solution.addBond(new Bond(selectedAtom, hoveredAtom,
-                        bondInfo.getBondLength(),
-                        bondInfo.getBondType()));
+                if (bondType && selectedAtom && hoveredAtom && selectedAtom != hoveredAtom) {
+                    try {
+                        const element1 = selectedAtom.getSymbol();
+                        const element2 = selectedAtom.getSymbol();
+                        const bondInfo = bondTable.getBondInformation(element1, element2, bondType);
+                        if (bondInfo) {
+                            solution.addBond(new Bond(selectedAtom, hoveredAtom,
+                                bondInfo.getBondLength(),
+                                bondInfo.getBondType()));
+                        } else {
+                            const message = `${element1}-${element2} is an invalid ${bondType.toLowerCase()} bond!`;
+                            addAlert(message, 'warning');
+                        }
+                    } catch(error) {
+                        addAlert(error.message, 'error');
+                    }
                 }
-            }
+            });
         };
     
         const onClick = (event) => {
