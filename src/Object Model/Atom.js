@@ -1,14 +1,22 @@
 class Atom {
     #position;
+    #velocity;
+    #force;
+
     #symbol;
     #atomicNumber;
+    #atomicMass;
     #atomicRadius;
     #bonds;
 
-    constructor(position, symbol, atomicNumber, atomicRadius) {
+    constructor(position, symbol, atomicNumber, atomicMass, atomicRadius) {
         this.#position = position;
+        this.#velocity = [0, 0, 0];
+        this.#force = [0, 0, 0];
+
         this.#symbol = symbol;
         this.#atomicNumber = atomicNumber;
+        this.#atomicMass = atomicMass;
         this.#atomicRadius = atomicRadius;
         this.#bonds = [];
     }
@@ -48,6 +56,10 @@ class Atom {
         return ((this.#atomicRadius - minRadius) / (maxRadius - minRadius)) + epsilon;
     }
 
+    getMass() {
+        return this.#atomicMass;
+    }
+
     getColor() {
         const colorMap = ["red", "blue", "purple", ];
         return colorMap[this.#atomicNumber % colorMap.length];
@@ -55,6 +67,42 @@ class Atom {
 
     getBonds() {
         return this.#bonds;
+    }
+
+    getForce() {
+        return this.#force;
+    }
+
+    setForce(fx, fy, fz) {
+        this.#force[0] = fx;
+        this.#force[1] = fy;
+        this.#force[2] = fz;
+    }
+
+    applyForce(fx, fy, fz) {
+        this.#force[0] += fx;
+        this.#force[1] += fy;
+        this.#force[2] += fz;
+    }
+
+    getvelocity() {
+        return this.#velocity;
+    }
+
+    updateVelocity() {
+        const accelerationX = this.#force[0] / this.#atomicMass;
+        const accelerationY = this.#force[1] / this.#atomicMass;
+        const accelerationZ = this.#force[2] / this.#atomicMass;
+
+        this.#velocity[0] += accelerationX;
+        this.#velocity[1] += accelerationY;
+        this.#velocity[2] += accelerationZ;
+    }
+
+    updatePosition() {
+        this.#position[0] += this.#velocity[0];
+        this.#position[1] += this.#velocity[1];
+        this.#position[2] += this.#velocity[2];
     }
 }
 

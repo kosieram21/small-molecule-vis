@@ -396,7 +396,7 @@ function MoleculeDrawingView({ solution }) {
                             const bondInfo = bondTable.getBondInformation(element1, element2, bondType);
                             if (bondInfo) {
                                 solution.addBond(new Bond(selectedAtom, hoveredAtom,
-                                    bondInfo.getBondLength(),
+                                    bondInfo.getBondLength(), bondInfo.getBondEnergy(),
                                     bondInfo.getBondType()));
                             } else {
                                 const message = `${element1}-${element2} is an invalid ${bondType.toLowerCase()} bond!`;
@@ -421,6 +421,7 @@ function MoleculeDrawingView({ solution }) {
                     hoveredAtom = new Atom([solutionCoords.x, solutionCoords.y, 0], 
                         element.getSymbol(), 
                         element.getAtomicNumber(),
+                        element.getAtomicMass(),
                         element.getAtomicRadius());
                     solution.addAtom(hoveredAtom);
                 } else {
