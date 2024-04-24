@@ -40,12 +40,12 @@ function MoleculeDrawingView({ solution }) {
         };
 
         const getCanvasRadius = (atomicRadius) => {
-            const canvasRadius = 15 + 30 * atomicRadius;
+            const canvasRadius = 20 + 50 * atomicRadius;
             return atomicRadius == 0 ? 0 : canvasRadius;
         };
 
         const getCanvasFontSize = (atomicRadius) => {
-            const fontSize = 20 + 40 * atomicRadius;
+            const fontSize = 30 + 60 * atomicRadius;
             return fontSize;
         };
 
@@ -55,12 +55,6 @@ function MoleculeDrawingView({ solution }) {
 
         const getHighlightColor = () => {
             return 'rgba(173, 216, 230, 0.5)'
-        };
-
-        const perpendicularVector = (vec, magnitude) => {
-            const perpX = -vec.y * magnitude;
-            const perpY = vec.x * magnitude;
-            return new Two.Vector(perpX, perpY)
         };
 
         const pointToSegmentDistance = (p, a, b) => {
@@ -175,7 +169,7 @@ function MoleculeDrawingView({ solution }) {
             const direction = Two.Vector.sub(canvasStart, canvasEnd).normalize();
             const offset= new Two.Vector(-direction.y, direction.x).multiplyScalar(canvasLineWidth * 2);
 
-            const a = Two.Vector.sub(canvasStart, direction.clone().multiplyScalar(canvasRadius2));
+            const a = Two.Vector.sub(canvasStart, direction.clone().multiplyScalar(canvasRadius1));
             const b = Two.Vector.add(canvasEnd, direction.clone().multiplyScalar(canvasRadius2));
 
             const a1 = Two.Vector.add(a, offset);
@@ -266,8 +260,8 @@ function MoleculeDrawingView({ solution }) {
                 const canvasMid = Two.Vector.add(canvasStart, canvasEnd).divideScalar(2);
                 const distance = canvasStart.distanceTo(canvasEnd);
 
-                const rx = (distance / 2) - 15;
-                const ry = getCanvasLineWidth() * 4;
+                const rx = (distance / 2) - 17;
+                const ry = getCanvasLineWidth() * 7;
 
                 const highlight = new Two.Ellipse(canvasMid.x, canvasMid.y, rx, ry);
                 highlight.fill = getHighlightColor();
