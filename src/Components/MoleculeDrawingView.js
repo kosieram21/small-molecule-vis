@@ -12,7 +12,7 @@ function MoleculeDrawingView({ solution }) {
     const selectedElementRef = useRef(selectedElement);
     const selectedBondRef = useRef(selectedBond);
     const gridEnabledRef = useRef(gridEnabled);
-    
+
     const twoRef = useRef(new Two());
 
     useEffect(() => {
@@ -388,22 +388,27 @@ function MoleculeDrawingView({ solution }) {
         const checkBondCoherence = async () => {
             return BondTable.load().then(bondTable => {
                 const bondType = selectedBondRef.current;
-                if (bondType && selectedAtom && hoveredAtom && selectedAtom != hoveredAtom) {
-                    try {
-                        const element1 = selectedAtom.getSymbol();
-                        const element2 = hoveredAtom.getSymbol();
-                        const bondInfo = bondTable.getBondInformation(element1, element2, bondType);
-                        if (bondInfo) {
-                            solution.addBond(new Bond(selectedAtom, hoveredAtom,
-                                bondInfo.getBondLength(),
-                                bondInfo.getBondType()));
-                        } else {
-                            const message = `${element1}-${element2} is an invalid ${bondType.toLowerCase()} bond!`;
-                            addAlert(message, 'warning');
+                if (bondType) {
+                    if (selectedAtom && hoveredAtom && selectedAtom != hoveredAtom) {
+                        try {
+                            const element1 = selectedAtom.getSymbol();
+                            const element2 = hoveredAtom.getSymbol();
+                            const bondInfo = bondTable.getBondInformation(element1, element2, bondType);
+                            if (bondInfo) {
+                                solution.addBond(new Bond(selectedAtom, hoveredAtom,
+                                    bondInfo.getBondLength(),
+                                    bondInfo.getBondType()));
+                            } else {
+                                const message = `${element1}-${element2} is an invalid ${bondType.toLowerCase()} bond!`;
+                                addAlert(message, 'warning');
+                            }
+                        } catch(error) {
+                            addAlert(error.message, 'error');
                         }
-                    } catch(error) {
-                        addAlert(error.message, 'error');
                     }
+                } else if (hoveredAtom) {
+                    const message = 'Please select a bond type!';
+                    addAlert(message, 'info');
                 }
             });
         };
@@ -418,6 +423,9 @@ function MoleculeDrawingView({ solution }) {
                         element.getAtomicNumber(),
                         element.getAtomicRadius());
                     solution.addAtom(hoveredAtom);
+                } else {
+                    const message = 'Please select an element!';
+                    addAlert(message, 'info');
                 }
             });
         };
