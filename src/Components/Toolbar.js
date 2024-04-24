@@ -36,7 +36,7 @@ function Toolbar() {
     setSelectedElement(selectedOption ? selectedOption.value : selectedOption);
   };
 
-  const bondComboBoxOnChange = (event, selectedOption) => {
+  const bondTypeComboBoxOnChange = (event, selectedOption) => {
     setSelectedBond(selectedOption ? selectedOption.value : selectedOption);
   }
 
@@ -52,8 +52,8 @@ function Toolbar() {
     <div className='toolbar'>
       <Autocomplete className='combo-box' options={elementOptions} onChange={elementComboBoxOnChange}
         renderInput={(params) => <TextField {...params} label="Element" variant="standard" />}/>
-      <Autocomplete className='combo-box' options={bondOptions} onChange={bondComboBoxOnChange}
-        renderInput={(params) => <TextField {...params} label="Bond" variant="standard"/>}/>
+      <Autocomplete className='combo-box' options={bondOptions} onChange={bondTypeComboBoxOnChange}
+        renderInput={(params) => <TextField {...params} label="Bond Type" variant="standard"/>}/>
       <FormControlLabel className='check-box' label="Grid" labelPlacement="start"
         control={<Checkbox checked={gridEnabled} onChange={gridCheckBoxOnChange}/>}/>
       <FormControlLabel className='switch' label="Simulation" labelPlacement="start"

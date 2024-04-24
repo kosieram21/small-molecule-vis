@@ -466,7 +466,10 @@ function MoleculeDrawingView({ solution }) {
         };
 
         const onMouseUp = async (event) => {
-            await checkBondCoherence();
+            if (!event.shiftKey) {
+                await checkBondCoherence();
+            }
+            
             selectedAtom = null;
             selectedBond = null;
 
