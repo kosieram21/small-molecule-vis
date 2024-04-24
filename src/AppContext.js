@@ -6,6 +6,7 @@ export const AppContextProvider = ({ children }) => {
     const [selectedElement, setSelectedElement] = useState("");
     const [selectedBond, setSelectedBond] = useState("");
     const [gridEnabled, setGridEnabled] = useState(true);
+    const [simulationEnabled, setSimulationEnabled] = useState(false);
     const [alerts, setAlerts] = useState([]);
 
     const addAlert = (message, severity = 'info') => {
@@ -21,6 +22,7 @@ export const AppContextProvider = ({ children }) => {
         selectedElement, setSelectedElement, 
         selectedBond, setSelectedBond, 
         gridEnabled, setGridEnabled,
+        simulationEnabled, setSimulationEnabled,
         alerts, addAlert, removeAlert
     };
 

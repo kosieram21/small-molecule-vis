@@ -12,6 +12,7 @@ function MoleculeDrawingView({ solution }) {
     const selectedElementRef = useRef(selectedElement);
     const selectedBondRef = useRef(selectedBond);
     const gridEnabledRef = useRef(gridEnabled);
+    
     const twoRef = useRef(new Two());
 
     useEffect(() => {

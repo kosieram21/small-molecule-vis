@@ -35,6 +35,10 @@ class Solution {
     getBonds() {
         return this.#bonds;
     }
+
+    simulationStep() {
+        console.log('simulate');
+    }
 }
 
 export default Solution;

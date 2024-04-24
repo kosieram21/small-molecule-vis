@@ -12,7 +12,7 @@ import BondTable from '../Object Model/BondTable'
 function Toolbar() {
   const [elementOptions, setElementOptions] = useState([]);
   const [bondOptions, setBondOptions] = useState([]);
-  const { setSelectedElement, setSelectedBond, gridEnabled, setGridEnabled } = useAppContext();
+  const { setSelectedElement, setSelectedBond, gridEnabled, setGridEnabled, simulationEnabled, setSimulationEnabled } = useAppContext();
 
   useEffect(() => {
     PeriodicTable.load().then(periodicTable => {
@@ -44,6 +44,10 @@ function Toolbar() {
     setGridEnabled(event.target.checked);
   }
 
+  const simulationSwitchOnChange = (event) => {
+    setSimulationEnabled(event.target.checked);
+  }
+
   return (
     <div className='toolbar'>
       <Autocomplete className='combo-box' options={elementOptions} onChange={elementComboBoxOnChange}
@@ -53,7 +57,7 @@ function Toolbar() {
       <FormControlLabel className='check-box' label="Grid" labelPlacement="start"
         control={<Checkbox checked={gridEnabled} onChange={gridCheckBoxOnChange}/>}/>
       <FormControlLabel className='switch' label="Simulation" labelPlacement="start"
-        control={<Switch/>}/>
+        control={<Switch checked ={simulationEnabled} onChange={simulationSwitchOnChange}/>}/>
     </div>
   );
 }

@@ -1,9 +1,13 @@
 import React, { useRef, useEffect } from 'react';
+import { useAppContext } from '../AppContext';
 import * as THREE from 'three';
 import { ArcballControls } from 'three/examples/jsm/controls/ArcballControls.js';
 import GraphicsContainer from './GraphicsContainer';
 
 function MoleculeSimulationView({ solution }) {
+  const { simulationEnabled } = useAppContext();
+  const simulationEnabledRef = useRef(simulationEnabled);
+
   const sceneRef = useRef(new THREE.Scene());
   const cameraRef = useRef(new THREE.PerspectiveCamera(75, 1, 0.1, 1000));
   const rendererRef = useRef(new THREE.WebGLRenderer({ antialias: true, powerPreference: "high-performance" }));
@@ -215,7 +219,12 @@ function MoleculeSimulationView({ solution }) {
     const animate = () => {
       clearScene();
       setupLights();
+
+      if (simulationEnabledRef.current) {
+        solution.simulationStep();
+      }
       renderMolecules();
+      
       renderer.render(scene, camera);
       controls.update();
       animationFrameId = requestAnimationFrame(animate);
@@ -229,6 +238,10 @@ function MoleculeSimulationView({ solution }) {
       renderer.dispose();
     };
   }, [solution]);
+
+  useEffect(() => {
+    simulationEnabledRef.current = simulationEnabled;
+  }, [simulationEnabled]);
 
   const onResize = (width, height) => {
     const renderer = rendererRef.current;
