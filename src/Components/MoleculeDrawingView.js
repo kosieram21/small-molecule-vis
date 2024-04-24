@@ -466,7 +466,7 @@ function MoleculeDrawingView({ solution }) {
         };
 
         const onMouseUp = async (event) => {
-            if (!event.shiftKey) {
+            if (!event.shiftKey && !dragging) {
                 await checkBondCoherence();
             }
             
