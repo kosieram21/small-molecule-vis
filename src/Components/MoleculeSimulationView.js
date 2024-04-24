@@ -232,10 +232,18 @@ function MoleculeSimulationView({ solution }) {
 
     animate();
 
+    const onContextMenu = (event) => {
+      event.preventDefault();
+    };
+
+    renderer.domElement.addEventListener('contextmenu', onContextMenu);
+
     return () => {
       cancelAnimationFrame(animationFrameId);
       clearScene();
+
       renderer.dispose();
+      renderer.domElement.removeEventListener('contextmenu', onContextMenu);
     };
   }, [solution]);
 
