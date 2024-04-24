@@ -331,10 +331,14 @@ function MoleculeDrawingView({ solution }) {
             for (const bond of solution.getBonds()) {
                 const [x1, y1] = bond.getAtom1().getPosition();
                 const [x2, y2] = bond.getAtom2().getPosition();
+                const bondType = bond.getType();
         
                 const canvasAtom1Coords = getCanvasCoordinates(x1, y1);
                 const canvasAtom2Coords = getCanvasCoordinates(x2, y2);
-                const lineWidth = getCanvasLineWidth();
+                const scalar = 
+                    bondType === 'Triple' ? 3 :
+                    bondType === 'Double' ? 2 : 1;
+                const lineWidth = (getCanvasLineWidth() + 1) * scalar;
         
                 const distance = pointToSegmentDistance(canvasClientCoords, canvasAtom1Coords, canvasAtom2Coords);
 
