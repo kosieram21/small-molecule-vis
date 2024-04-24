@@ -57,21 +57,6 @@ function MoleculeDrawingView({ solution }) {
             return 'rgba(173, 216, 230, 0.5)'
         };
 
-        const pointToSegmentDistance = (p, a, b) => {
-            const ab = Two.Vector.sub(a, b);
-            const ap = Two.Vector.sub(a, p);
-        
-            if (ab.lengthSquared() === 0) {
-                return ap.length();
-            }
-        
-            const projection = ap.dot(ab) / ab.lengthSquared();
-            const t = Math.max(0, Math.min(1, projection));
-
-            const closest = Two.Vector.sub(a, ab.clone().multiplyScalar(t));
-            return p.distanceTo(closest);
-        };
-
         const renderGrid = () => {
             if (gridEnabledRef.current) {
                 const spacingX = two.width / 10;
@@ -206,7 +191,6 @@ function MoleculeDrawingView({ solution }) {
                     renderTripleBond(startX, startY, endX, endY, radius1, radius2);
                     break;
                 default:
-                    addAlert(`${bondType} is an invalid bond type!`, 'error');
                     break;
             }
         };
@@ -323,6 +307,21 @@ function MoleculeDrawingView({ solution }) {
             }
 
             return null;
+        };
+
+        const pointToSegmentDistance = (p, a, b) => {
+            const ab = Two.Vector.sub(a, b);
+            const ap = Two.Vector.sub(a, p);
+        
+            if (ab.lengthSquared() === 0) {
+                return ap.length();
+            }
+        
+            const projection = ap.dot(ab) / ab.lengthSquared();
+            const t = Math.max(0, Math.min(1, projection));
+
+            const closest = Two.Vector.sub(a, ab.clone().multiplyScalar(t));
+            return p.distanceTo(closest);
         };
 
         const checkBondCollision = (clientX, clientY) => {

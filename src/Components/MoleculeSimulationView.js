@@ -43,6 +43,10 @@ function MoleculeSimulationView({ solution }) {
       return sceneRadius;
     };
 
+    const getSceneCylinderRadius = () => {
+      return 0.03;
+    };
+
     const clearScene = () => {
       while(scene.children.length > 0){ 
         const child = scene.children[0];
@@ -69,6 +73,7 @@ function MoleculeSimulationView({ solution }) {
     const renderSingleBond = (startX, startY, startZ, endX, endY, endZ) => {
       const [sceneStartX, sceneStartY, sceneStartZ] = getSceneCoordinates(startX, startY, startZ);
       const [sceneEndX, sceneEndY, sceneEndZ] = getSceneCoordinates(endX, endY, endZ);
+      const sceneCylinderRadius = getSceneCylinderRadius();
 
       const start = new THREE.Vector3(sceneStartX, sceneStartY, sceneStartZ);
       const end = new THREE.Vector3(sceneEndX, sceneEndY, sceneEndZ);
@@ -81,7 +86,7 @@ function MoleculeSimulationView({ solution }) {
       orientation.setPosition(new THREE.Vector3().addVectors(start, end).multiplyScalar(0.5));
       orientation.multiply(new THREE.Matrix4().makeRotationX(Math.PI / 2));
 
-      const geometry = new THREE.CylinderGeometry(0.05, 0.05, length, 32);
+      const geometry = new THREE.CylinderGeometry(sceneCylinderRadius, sceneCylinderRadius, length, 32);
       const material = new THREE.MeshPhongMaterial({ color: 'white', shininess: 50 });
 
       const cylinder = new THREE.Mesh(geometry, material);
@@ -89,10 +94,100 @@ function MoleculeSimulationView({ solution }) {
       scene.add(cylinder);
     };
 
+    const renderDoubleBond = (startX, startY, startZ, endX, endY, endZ) => {
+      const [sceneStartX, sceneStartY, sceneStartZ] = getSceneCoordinates(startX, startY, startZ);
+      const [sceneEndX, sceneEndY, sceneEndZ] = getSceneCoordinates(endX, endY, endZ);
+      const sceneCylinderRadius = getSceneCylinderRadius();
+
+      const start = new THREE.Vector3(sceneStartX, sceneStartY, sceneStartZ);
+      const end = new THREE.Vector3(sceneEndX, sceneEndY, sceneEndZ);
+      
+      const direction = new THREE.Vector3().subVectors(end, start);
+      const offset= new THREE.Vector3(-direction.y, direction.x, direction.z).multiplyScalar(0.01);
+      const length = direction.length();
+
+      const a1 = new THREE.Vector3().addVectors(start, offset);
+      const b1 = new THREE.Vector3().addVectors(end, offset);
+
+      const a2 = new THREE.Vector3().subVectors(start, offset);
+      const b2 = new THREE.Vector3().subVectors(end, offset);
+
+      const orientation = new THREE.Matrix4();
+      orientation.lookAt(start, end, new THREE.Object3D().up);
+      orientation.multiply(new THREE.Matrix4().makeRotationX(Math.PI / 2));
+
+      const geometry = new THREE.CylinderGeometry(sceneCylinderRadius, sceneCylinderRadius, length, 32);
+      const material = new THREE.MeshPhongMaterial({ color: 'white', shininess: 50 });
+
+      orientation.setPosition(new THREE.Vector3().addVectors(a1, b1).multiplyScalar(0.5));
+      const cylinder1 = new THREE.Mesh(geometry, material);
+      cylinder1.applyMatrix4(orientation);
+      scene.add(cylinder1);
+
+      orientation.setPosition(new THREE.Vector3().addVectors(a2, b2).multiplyScalar(0.5));
+      const cylinder2 = new THREE.Mesh(geometry, material);
+      cylinder2.applyMatrix4(orientation);
+      scene.add(cylinder2);
+    };
+
+    const renderTripleBond = (startX, startY, startZ, endX, endY, endZ) => {
+      const [sceneStartX, sceneStartY, sceneStartZ] = getSceneCoordinates(startX, startY, startZ);
+      const [sceneEndX, sceneEndY, sceneEndZ] = getSceneCoordinates(endX, endY, endZ);
+      const sceneCylinderRadius = getSceneCylinderRadius();
+
+      const start = new THREE.Vector3(sceneStartX, sceneStartY, sceneStartZ);
+      const end = new THREE.Vector3(sceneEndX, sceneEndY, sceneEndZ);
+      
+      const direction = new THREE.Vector3().subVectors(end, start);
+      const offset= new THREE.Vector3(-direction.y, direction.x, direction.z).multiplyScalar(0.01);
+      const length = direction.length();
+
+      const a1 = new THREE.Vector3().addVectors(start, offset);
+      const b1 = new THREE.Vector3().addVectors(end, offset);
+
+      const a2 = new THREE.Vector3().subVectors(start, offset);
+      const b2 = new THREE.Vector3().subVectors(end, offset);
+
+      const orientation = new THREE.Matrix4();
+      orientation.lookAt(start, end, new THREE.Object3D().up);
+      orientation.setPosition(new THREE.Vector3().addVectors(start, end).multiplyScalar(0.5));
+      orientation.multiply(new THREE.Matrix4().makeRotationX(Math.PI / 2));
+
+      const geometry = new THREE.CylinderGeometry(sceneCylinderRadius, sceneCylinderRadius, length, 32);
+      const material = new THREE.MeshPhongMaterial({ color: 'white', shininess: 50 });
+
+      const cylinder = new THREE.Mesh(geometry, material);
+      cylinder.applyMatrix4(orientation);
+      scene.add(cylinder);
+
+      orientation.setPosition(new THREE.Vector3().addVectors(a1, b1).multiplyScalar(0.5));
+      const cylinder1 = new THREE.Mesh(geometry, material);
+      cylinder1.applyMatrix4(orientation);
+      scene.add(cylinder1);
+
+      orientation.setPosition(new THREE.Vector3().addVectors(a2, b2).multiplyScalar(0.5));
+      const cylinder2 = new THREE.Mesh(geometry, material);
+      cylinder2.applyMatrix4(orientation);
+      scene.add(cylinder2);
+    };
+
     const renderBond = (bond) => {
+      const bondType = bond.getType();
       const [startX, startY, startZ] = bond.getAtom1().getPosition();
       const [endX, endY, endZ] = bond.getAtom2().getPosition();
-      renderSingleBond(startX, startY, startZ, endX, endY, endZ);
+        switch(bondType) {
+          case 'Single':
+            renderSingleBond(startX, startY, startZ, endX, endY, endZ);
+            break;
+          case 'Double':
+            renderDoubleBond(startX, startY, startZ, endX, endY, endZ);
+            break;
+          case 'Triple':
+            renderTripleBond(startX, startY, startZ, endX, endY, endZ);
+            break;
+          default:
+            break;
+      }
     };
 
     const renderAtom = (atom) => {
