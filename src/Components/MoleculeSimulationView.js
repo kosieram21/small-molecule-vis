@@ -103,7 +103,7 @@ function MoleculeSimulationView({ solution }) {
       const end = new THREE.Vector3(sceneEndX, sceneEndY, sceneEndZ);
       
       const direction = new THREE.Vector3().subVectors(end, start);
-      const offset= new THREE.Vector3(-direction.y, direction.x, direction.z).multiplyScalar(0.01);
+      const offset= new THREE.Vector3(-direction.y, direction.x, direction.z).normalize().multiplyScalar(0.1);
       const length = direction.length();
 
       const a1 = new THREE.Vector3().addVectors(start, offset);
@@ -139,7 +139,7 @@ function MoleculeSimulationView({ solution }) {
       const end = new THREE.Vector3(sceneEndX, sceneEndY, sceneEndZ);
       
       const direction = new THREE.Vector3().subVectors(end, start);
-      const offset= new THREE.Vector3(-direction.y, direction.x, direction.z).multiplyScalar(0.01);
+      const offset= new THREE.Vector3(-direction.y, direction.x, direction.z).normalize().multiplyScalar(0.1);
       const length = direction.length();
 
       const a1 = new THREE.Vector3().addVectors(start, offset);
