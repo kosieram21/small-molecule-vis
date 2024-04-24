@@ -29,6 +29,13 @@ class Bond {
     getType() {
         return this.#type;
     }
+
+    update(bondInfo) {
+        if (bondInfo) {
+            this.#length = bondInfo.getBondLength();
+            this.#type = bondInfo.getBondType();
+        }
+    }
 }
 
 export default Bond;

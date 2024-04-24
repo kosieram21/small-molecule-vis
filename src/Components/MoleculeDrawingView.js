@@ -350,13 +350,47 @@ function MoleculeDrawingView({ solution }) {
             return null;
         };
 
+        const cycleBondType = async (selectedBond) => {
+            return BondTable.load().then(bondTable => {
+                try {
+                    const bondType = selectedBond.getType();
+                    const element1 = selectedBond.getAtom1().getSymbol();
+                    const element2 = selectedBond.getAtom2().getSymbol();
+                    let bondInfo;
+                
+                    switch(bondType) {
+                        case 'Single':
+                            bondInfo = bondTable.getBondInformation(element1, element2, 'Double');
+                            if (bondInfo) {
+                                selectedBond.update(bondInfo);
+                            }
+                            break;
+                        case 'Double':
+                            bondInfo = bondTable.getBondInformation(element1, element2, 'Triple');
+                            if (bondInfo) {
+                                selectedBond.update(bondInfo);
+                            } else {
+                                bondInfo = bondTable.getBondInformation(element1, element2, 'Single');
+                                selectedBond.update(bondInfo);
+                            }
+                            break;
+                        case 'Triple':
+                            bondInfo = bondTable.getBondInformation(element1, element2, 'Single');
+                            selectedBond.update(bondInfo);
+                    }
+                } catch(error) {
+                    addAlert(error.message, 'error');
+                }
+            });
+        };
+
         const checkBondCoherence = async () => {
             return BondTable.load().then(bondTable => {
                 const bondType = selectedBondRef.current;
                 if (bondType && selectedAtom && hoveredAtom && selectedAtom != hoveredAtom) {
                     try {
                         const element1 = selectedAtom.getSymbol();
-                        const element2 = selectedAtom.getSymbol();
+                        const element2 = hoveredAtom.getSymbol();
                         const bondInfo = bondTable.getBondInformation(element1, element2, bondType);
                         if (bondInfo) {
                             solution.addBond(new Bond(selectedAtom, hoveredAtom,
@@ -395,7 +429,7 @@ function MoleculeDrawingView({ solution }) {
             two.scene.scale = Math.max(two.scene.scale, 0.1);
         };
 
-        const onMouseDown = (event) => {
+        const onMouseDown = async (event) => {
             selectedAtom = checkAtomCollision(event.clientX, event.clientY);
             selectedBond = checkBondCollision(event.clientX, event.clientY);
 
@@ -409,6 +443,8 @@ function MoleculeDrawingView({ solution }) {
                     solution.removeBond(selectedBond);
                     selectedBond = null;
                 }
+            } else if (!selectedAtom && selectedBond) {
+                await cycleBondType(selectedBond);
             }
 
             if (event.button === 2) {
