@@ -30,13 +30,13 @@ function MoleculeDrawingView({ solution }) {
             const normalizedY = (clientY - rect.top) / two.height;
             const solutionX = (normalizedX - two.scene.translation.x / two.width) / two.scene.scale;
             const solutionY = (normalizedY - two.scene.translation.y / two.height) / two.scene.scale;
-            return [solutionX, solutionY];
+            return new Two.Vector(solutionX, solutionY);
         };
 
         const getCanvasCoordinates = (solutionX, solutionY) => {
             const canvasX = solutionX * two.width;
             const canvasY = solutionY * two.height;
-            return [canvasX, canvasY];
+            return new Two.Vector(canvasX, canvasY);
         };
 
         const getCanvasRadius = (atomicRadius) => {
@@ -57,46 +57,42 @@ function MoleculeDrawingView({ solution }) {
             return 'rgba(173, 216, 230, 0.5)'
         };
 
-        const vectorDirection = (ax, ay, bx, by, normalized = false) => {
-            const dx = bx - ax;
-            const dy = by - ay;
-            const scalar = normalized ? euclideanDistance(ax, ay, bx, by) : 1;
-            return [dx / scalar, dy / scalar];
+        const vectorDirection = (a, b, normalized = false) => {
+            const direction = Two.Vector.sub(a, b);
+            const scalar = normalized ? euclideanDistance(a, b) : 1;
+            return new Two.Vector(direction.x / scalar, direction.y / scalar);
         }
 
-        const vectorOrientation = (ax, ay, bx, by) => {
-            const [dx, dy] = vectorDirection(ax, ay, bx, by);
-            const angle = Math.atan2(dy, dx);
+        const vectorOrientation = (a, b) => {
+            const direction = vectorDirection(a, b);
+            const angle = Math.atan2(direction.y, direction.x);
             return angle;
         };
 
-        const perpendicularVector = (x, y, magnitude) => {
-            const perpX = -y * magnitude;
-            const perpY = x * magnitude;
-            return [perpX, perpY]
+        const perpendicularVector = (vec, magnitude) => {
+            const perpX = -vec.y * magnitude;
+            const perpY = vec.x * magnitude;
+            return new Two.Vector(perpX, perpY)
         };
 
-        const euclideanDistance = (ax, ay, bx, by) => {
-            const [dx, dy] = vectorDirection(ax, ay, bx, by);
-            const distance = Math.sqrt(dx * dx + dy * dy);
-            return distance;
+        const euclideanDistance = (a, b) => {
+            const direction = vectorDirection(a, b);
+            return direction.length();
         };
 
-        const pointToSegmentDistance = (px, py, ax, ay, bx, by) => {
-            const [dx, dy] = vectorDirection(ax, ay, bx, by);
-            const [p2x, p2y] = vectorDirection(ax, ay, px, py);
-            const squaredNorm = dx * dx + dy * dy;
+        const pointToSegmentDistance = (p, a, b) => {
+            const ab = vectorDirection(a, b);
+            const ap = vectorDirection(a, p);
         
-            if (squaredNorm === 0) {
-                return Math.sqrt(p2x * p2x + p2y * p2y);
+            if (ab.lengthSquared() === 0) {
+                return ap.length();
             }
         
-            const t = Math.max(0, Math.min(1, (p2x * dx + p2y * dy) / squaredNorm));
-            const closestX = (ax + t * dx);
-            const closestY = (ay + t * dy);
-            const distance = euclideanDistance(px, py, closestX, closestY);
-        
-            return distance;
+            const projection = ap.dot(ab) / ab.lengthSquared();
+            const t = Math.max(0, Math.min(1, projection));
+
+            const closest = Two.Vector.sub(a, ab.clone().multiplyScalar(t));
+            return euclideanDistance(p, closest);
         };
 
         const renderGrid = () => {
@@ -136,100 +132,86 @@ function MoleculeDrawingView({ solution }) {
         };
 
         const renderSingleBond = (startX, startY, endX, endY, radius1, radius2) => {
-            const [canvasStartX, canvasStartY] = getCanvasCoordinates(startX, startY);
-            const [canvasEndX, canvasEndY] = getCanvasCoordinates(endX, endY);
+            const canvasStart = getCanvasCoordinates(startX, startY);
+            const canvasEnd = getCanvasCoordinates(endX, endY);
 
             const canvasRadius1 = getCanvasRadius(radius1);
             const canvasRadius2 = getCanvasRadius(radius2);
             const canvasLineWidth = getCanvasLineWidth();
 
-            const [dx, dy] = vectorDirection(canvasStartX, canvasStartY, canvasEndX, canvasEndY, true);
+            const direction = vectorDirection(canvasStart, canvasEnd, true);
 
-            const ax = canvasStartX + dx * canvasRadius1;
-            const ay = canvasStartY + dy * canvasRadius1;
-            const bx = canvasEndX - dx * canvasRadius2;
-            const by = canvasEndY - dy * canvasRadius2;
+            const a = Two.Vector.sub(canvasStart, direction.clone().multiplyScalar(canvasRadius1));
+            const b = Two.Vector.add(canvasEnd, direction.clone().multiplyScalar(canvasRadius2));
 
-            const line = new Two.Line(ax, ay, bx, by);
+            const line = new Two.Line(a.x, a.y, b.x, b.y);
             line.stroke = 'black';
             line.linewidth = canvasLineWidth;
             two.add(line);
         };
 
         const renderDoubleBond = (startX, startY, endX, endY, radius1, radius2) => {
-            const [canvasStartX, canvasStartY] = getCanvasCoordinates(startX, startY);
-            const [canvasEndX, canvasEndY] = getCanvasCoordinates(endX, endY);
+            const canvasStart = getCanvasCoordinates(startX, startY);
+            const canvasEnd = getCanvasCoordinates(endX, endY);
 
             const canvasRadius1 = getCanvasRadius(radius1);
             const canvasRadius2 = getCanvasRadius(radius2);
             const canvasLineWidth = getCanvasLineWidth();
 
-            const [dx, dy] = vectorDirection(canvasStartX, canvasStartY, canvasEndX, canvasEndY, true);
-            const [perpX, perpY] = perpendicularVector(dx, dy, canvasLineWidth);
+            const direction = vectorDirection(canvasStart, canvasEnd, true);
+            const perp= perpendicularVector(direction, canvasLineWidth * 2);
 
-            const ax = canvasStartX + dx * canvasRadius1;
-            const ay = canvasStartY + dy * canvasRadius1;
-            const bx = canvasEndX - dx * canvasRadius2;
-            const by = canvasEndY - dy * canvasRadius2;
+            const a = Two.Vector.sub(canvasStart, direction.clone().multiplyScalar(canvasRadius1));
+            const b = Two.Vector.add(canvasEnd, direction.clone().multiplyScalar(canvasRadius2));
 
-            const ax1 = ax + perpX;
-            const ay1 = ay + perpY;
-            const bx1 = bx + perpX;
-            const by1 = by + perpY;
+            const a1 = Two.Vector.add(a, perp);
+            const b1 = Two.Vector.add(b, perp);
 
-            const ax2 = ax - perpX;
-            const ay2 = ay - perpY;
-            const bx2 = bx - perpX;
-            const by2 = by - perpY;
+            const a2 = Two.Vector.sub(a, perp);
+            const b2 = Two.Vector.sub(b, perp);
 
-            const line1 = new Two.Line(ax1, ay1, bx1, by1);
+            const line1 = new Two.Line(a1.x, a1.y, b1.x, b1.y);
             line1.stroke = 'black';
             line1.linewidth = canvasLineWidth;
             two.add(line1);
             
-            const line2 = new Two.Line(ax2, ay2, bx2, by2);
+            const line2 = new Two.Line(a2.x, a2.y, b2.x, b2.y);
             line2.stroke = 'black';
             line2.linewidth = canvasLineWidth;
             two.add(line2);
         };
 
         const renderTripleBond = (startX, startY, endX, endY, radius1, radius2) => {
-            const [canvasStartX, canvasStartY] = getCanvasCoordinates(startX, startY);
-            const [canvasEndX, canvasEndY] = getCanvasCoordinates(endX, endY);
+            const canvasStart = getCanvasCoordinates(startX, startY);
+            const canvasEnd = getCanvasCoordinates(endX, endY);
 
             const canvasRadius1 = getCanvasRadius(radius1);
             const canvasRadius2 = getCanvasRadius(radius2);
             const canvasLineWidth = getCanvasLineWidth();
 
-            const [dx, dy] = vectorDirection(canvasStartX, canvasStartY, canvasEndX, canvasEndY, true);
-            const [perpX, perpY] = perpendicularVector(dx, dy, canvasLineWidth * 2);
+            const direction = vectorDirection(canvasStart, canvasEnd, true);
+            const perp= perpendicularVector(direction, canvasLineWidth * 2);
 
-            const ax = canvasStartX + dx * canvasRadius1;
-            const ay = canvasStartY + dy * canvasRadius1;
-            const bx = canvasEndX - dx * canvasRadius2;
-            const by = canvasEndY - dy * canvasRadius2;
+            const a = Two.Vector.sub(canvasStart, direction.clone().multiplyScalar(canvasRadius2));
+            const b = Two.Vector.add(canvasEnd, direction.clone().multiplyScalar(canvasRadius2));
 
-            const ax1 = ax + perpX;
-            const ay1 = ay + perpY;
-            const bx1 = bx + perpX;
-            const by1 = by + perpY;
+            const a1 = Two.Vector.add(a, perp);
+            const b1 = Two.Vector.add(b, perp);
 
-            const ax2 = ax - perpX;
-            const ay2 = ay - perpY;
-            const bx2 = bx - perpX;
-            const by2 = by - perpY;
+            const a2 = Two.Vector.sub(a, perp);
+            const b2 = Two.Vector.sub(b, perp);
 
-            const line1 = new Two.Line(ax, ay, bx, by);
+            const line1 = new Two.Line(a.x, a.y, b.x, b.y);
             line1.stroke = 'black';
             line1.linewidth = canvasLineWidth;
             two.add(line1);
 
-            const line2 = new Two.Line(ax1, ay1, bx1, by1);
+            const line2 = new Two.Line(a1.x, a1.y, b1.x, b1.y);
             line2.stroke = 'black';
             line2.linewidth = canvasLineWidth;
             two.add(line2);
             
-            const line3 = new Two.Line(ax2, ay2, bx2, by2);
+            const line3 = new Two.Line(a2.x, a2.y, b2.x, b2.y);
             line3.stroke = 'black';
             line3.linewidth = canvasLineWidth;
             two.add(line3);
@@ -255,9 +237,10 @@ function MoleculeDrawingView({ solution }) {
         const renderCurrentBond = () => {
             if (selectedAtom && selectedAtom != hoveredAtom) {
                 const bondType = selectedBondRef.current;
+                const clientCoords = getSolutionCoordinates(prevX, prevY);
                 if (bondType) {
                     const [startX, startY] = selectedAtom.getPosition();
-                    const [endX, endY] = hoveredAtom ? hoveredAtom.getPosition() : getSolutionCoordinates(prevX, prevY);
+                    const [endX, endY] = hoveredAtom ? hoveredAtom.getPosition() : [clientCoords.x, clientCoords.y];
                     const radius1 = selectedAtom.getAtomicRadius();
                     const radius2 = hoveredAtom ? hoveredAtom.getAtomicRadius() : 0;
                     renderBondByType(bondType, startX, startY, endX, endY, radius1, radius2);
@@ -280,9 +263,9 @@ function MoleculeDrawingView({ solution }) {
             const color = atom.getColor();
             const atomicRadius = atom.getAtomicRadius();
 
-            const [canvasX, canvasY] = getCanvasCoordinates(x, y);
+            const canvasCoords = getCanvasCoordinates(x, y);
     
-            const text = new Two.Text(symbol, canvasX, canvasY);
+            const text = new Two.Text(symbol, canvasCoords.x, canvasCoords.y);
             text.fill = color;
             text.alignment = 'center';
             text.baseline = 'middle';
@@ -295,19 +278,17 @@ function MoleculeDrawingView({ solution }) {
                 const [startX, startY] = bond.getAtom1().getPosition();
                 const [endX, endY] = bond.getAtom2().getPosition();
 
-                const [canvasStartX, canvasStartY] = getCanvasCoordinates(startX, startY);
-                const [canvasEndX, canvasEndY] = getCanvasCoordinates(endX, endY);
-
-                const canvasMidX = (canvasStartX + canvasEndX) / 2;
-                const canvasMidY = (canvasStartY + canvasEndY) / 2;
-                const distance = euclideanDistance(canvasStartX, canvasStartY, canvasEndX, canvasEndY);
+                const canvasStart = getCanvasCoordinates(startX, startY);
+                const canvasEnd = getCanvasCoordinates(endX, endY);
+                const canvasMid = Two.Vector.add(canvasStart, canvasEnd).divideScalar(2);
+                const distance = euclideanDistance(canvasStart, canvasEnd);
 
                 const rx = (distance / 2) - 15;
                 const ry = getCanvasLineWidth() * 4;
 
-                const highlight = new Two.Ellipse(canvasMidX, canvasMidY, rx, ry);
+                const highlight = new Two.Ellipse(canvasMid.x, canvasMid.y, rx, ry);
                 highlight.fill = getHighlightColor();
-                highlight.rotation = vectorOrientation(canvasStartX, canvasStartY, canvasEndX, canvasEndY);
+                highlight.rotation = vectorOrientation(canvasStart, canvasEnd);
                 highlight.noStroke();
                 two.add(highlight);
             }
@@ -318,10 +299,10 @@ function MoleculeDrawingView({ solution }) {
                 const [x, y] = atom.getPosition();
                 const atomicRadius = atom.getAtomicRadius();
 
-                const [canvasX, canvasY] = getCanvasCoordinates(x, y);
+                const canvasCoords = getCanvasCoordinates(x, y);
                 const canvasRadius = getCanvasRadius(atomicRadius);
 
-                const highlight = new Two.Circle(canvasX, canvasY, canvasRadius);
+                const highlight = new Two.Circle(canvasCoords.x, canvasCoords.y, canvasRadius);
                 highlight.fill = getHighlightColor();
                 highlight.noStroke();
                 two.add(highlight);
@@ -347,17 +328,17 @@ function MoleculeDrawingView({ solution }) {
         };
 
         const checkAtomCollision = (clientX, clientY) => {
-            const [solutionX, solutionY] = getSolutionCoordinates(clientX, clientY);
-            const [canvasClientX, canvasClientY] = getCanvasCoordinates(solutionX, solutionY);
+            const solutionCoords = getSolutionCoordinates(clientX, clientY);
+            const canvasClientCoords = getCanvasCoordinates(solutionCoords.x, solutionCoords.y);
 
             for (const atom of solution.getAtoms()) {
                 const [x, y] = atom.getPosition();
                 const atomicRadius = atom.getAtomicRadius();
         
-                const [canvasAtomX, canvasAtomY] = getCanvasCoordinates(x, y);
+                const canvasAtomCoords = getCanvasCoordinates(x, y);
                 const canvasRadius = getCanvasRadius(atomicRadius);
         
-                const distance = euclideanDistance(canvasClientX, canvasClientY, canvasAtomX, canvasAtomY);
+                const distance = euclideanDistance(canvasClientCoords, canvasAtomCoords);
         
                 if (distance < canvasRadius) {
                     return atom;
@@ -368,22 +349,18 @@ function MoleculeDrawingView({ solution }) {
         };
 
         const checkBondCollision = (clientX, clientY) => {
-            const [solutionX, solutionY] = getSolutionCoordinates(clientX, clientY);
-            const [canvasClientX, canvasClientY] = getCanvasCoordinates(solutionX, solutionY);
+            const solutionCoords = getSolutionCoordinates(clientX, clientY);
+            const canvasClientCoords = getCanvasCoordinates(solutionCoords.x, solutionCoords.y);
         
             for (const bond of solution.getBonds()) {
                 const [x1, y1] = bond.getAtom1().getPosition();
                 const [x2, y2] = bond.getAtom2().getPosition();
         
-                const [canvasAtom1X, canvasAtom1Y] = getCanvasCoordinates(x1, y1);
-                const [canvasAtom2X, canvasAtom2Y] = getCanvasCoordinates(x2, y2);
+                const canvasAtom1Coords = getCanvasCoordinates(x1, y1);
+                const canvasAtom2Coords = getCanvasCoordinates(x2, y2);
                 const lineWidth = getCanvasLineWidth();
         
-                const distance = pointToSegmentDistance(
-                    canvasClientX, canvasClientY, 
-                    canvasAtom1X, canvasAtom1Y, 
-                    canvasAtom2X, canvasAtom2Y
-                );
+                const distance = pointToSegmentDistance(canvasClientCoords, canvasAtom1Coords, canvasAtom2Coords);
 
                 if (distance < lineWidth) {
                     return bond;
@@ -419,9 +396,9 @@ function MoleculeDrawingView({ solution }) {
         const onClick = (event) => {
             PeriodicTable.load().then(periodicTable => {
                 if (selectedElementRef.current) {
-                    const [solutionX, solutionY] = getSolutionCoordinates(event.clientX, event.clientY);
+                    const solutionCoords = getSolutionCoordinates(event.clientX, event.clientY);
                     const element = periodicTable.getElement(selectedElementRef.current);
-                    hoveredAtom = new Atom([solutionX, solutionY, 0], 
+                    hoveredAtom = new Atom([solutionCoords.x, solutionCoords.y, 0], 
                         element.getSymbol(), 
                         element.getAtomicNumber(),
                         element.getAtomicRadius());
@@ -489,9 +466,9 @@ function MoleculeDrawingView({ solution }) {
             }
 
             if (!panning && dragging && selectedAtom) {
-                const [solutionX, solutionY] = getSolutionCoordinates(event.clientX, event.clientY);
-                selectedAtom.setXPosition(solutionX);
-                selectedAtom.setYPosition(solutionY);
+                const solutionCoords = getSolutionCoordinates(event.clientX, event.clientY);
+                selectedAtom.setXPosition(solutionCoords.x);
+                selectedAtom.setYPosition(solutionCoords.y);
             }
 
             prevX = event.clientX;
