@@ -225,8 +225,8 @@ function MoleculeSimulationView({ solution }) {
       }
       renderMolecules();
       
-      renderer.render(scene, camera);
       controls.update();
+      renderer.render(scene, camera);
       animationFrameId = requestAnimationFrame(animate);
     };
 
