@@ -90,9 +90,10 @@ class Atom {
     }
 
     updateVelocity() {
-        const accelerationX = this.#force[0] / this.#atomicMass;
-        const accelerationY = this.#force[1] / this.#atomicMass;
-        const accelerationZ = this.#force[2] / this.#atomicMass;
+        const scalar = 100;
+        const accelerationX = this.#force[0] / this.#atomicMass * scalar;
+        const accelerationY = this.#force[1] / this.#atomicMass * scalar;
+        const accelerationZ = this.#force[2] / this.#atomicMass * scalar;
 
         this.#velocity[0] += accelerationX;
         this.#velocity[1] += accelerationY;

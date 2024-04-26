@@ -412,13 +412,17 @@ function MoleculeDrawingView({ solution }) {
                 }
             });
         };
+
+        const rng = (min, max) => {
+            return Math.random() * (max - min) + min;
+        };
     
         const onClick = (event) => {
             PeriodicTable.load().then(periodicTable => {
                 if (selectedElementRef.current) {
                     const solutionCoords = getSolutionCoordinates(event.clientX, event.clientY);
                     const element = periodicTable.getElement(selectedElementRef.current);
-                    hoveredAtom = new Atom([solutionCoords.x, solutionCoords.y, 0], 
+                    hoveredAtom = new Atom([solutionCoords.x, solutionCoords.y, rng(-0.1, 0.1)], 
                         element.getSymbol(), 
                         element.getAtomicNumber(),
                         element.getAtomicMass(),
