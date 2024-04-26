@@ -24,6 +24,10 @@ class Solution {
 
     removeBond(bond) {
         if (this.#bonds.has(bond)) {
+            const atom1 = bond.getAtom1();
+            const atom2 = bond.getAtom2();
+            atom1.getBonds().delete(bond);
+            atom2.getBonds().delete(bond);
             this.#bonds.delete(bond);
         }
     }

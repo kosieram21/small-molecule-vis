@@ -12,8 +12,8 @@ class Bond {
         this.#energy = energy;
         this.#type = type;
 
-        this.#atom1.getBonds().push(this);
-        this.#atom2.getBonds().push(this);
+        this.#atom1.getBonds().add(this);
+        this.#atom2.getBonds().add(this);
     }
 
     getAtom1() {

@@ -20,7 +20,7 @@ class Atom {
         this.#atomicNumber = atomicNumber;
         this.#atomicMass = atomicMass;
         this.#atomicRadius = atomicRadius;
-        this.#bonds = [];
+        this.#bonds = new Set();
     }
 
     getPosition() {
