@@ -2,6 +2,7 @@ class Atom {
     #position;
     #velocity;
     #force;
+    #anchored;
 
     #symbol;
     #atomicNumber;
@@ -13,6 +14,7 @@ class Atom {
         this.#position = position;
         this.#velocity = [0, 0, 0];
         this.#force = [0, 0, 0];
+        this.#anchored = false;
 
         this.#symbol = symbol;
         this.#atomicNumber = atomicNumber;
@@ -39,34 +41,6 @@ class Atom {
 
     setZPosition(zPosition) {
         this.#position[2] = zPosition;
-    }
-
-    getSymbol() {
-        return this.#symbol;
-    }
-
-    getAtomicNumber() {
-        return this.#atomicNumber;
-    }
-
-    getAtomicRadius() {
-        const minRadius = 0;
-        const maxRadius = 3.3;
-        const epsilon = 0.00001;
-        return ((this.#atomicRadius - minRadius) / (maxRadius - minRadius)) + epsilon;
-    }
-
-    getMass() {
-        return this.#atomicMass;
-    }
-
-    getColor() {
-        const colorMap = ["red", "blue", "purple", ];
-        return colorMap[this.#atomicNumber % colorMap.length];
-    }
-
-    getBonds() {
-        return this.#bonds;
     }
 
     getForce() {
@@ -104,6 +78,42 @@ class Atom {
         this.#position[0] += this.#velocity[0];
         this.#position[1] += this.#velocity[1];
         this.#position[2] += this.#velocity[2];
+    }
+
+    isAnchored() {
+        return this.#anchored;
+    }
+
+    setAnchor(anchored) {
+        this.#anchored = anchored;
+    }
+
+    getSymbol() {
+        return this.#symbol;
+    }
+
+    getAtomicNumber() {
+        return this.#atomicNumber;
+    }
+
+    getAtomicRadius() {
+        const minRadius = 0;
+        const maxRadius = 3.3;
+        const epsilon = 0.00001;
+        return ((this.#atomicRadius - minRadius) / (maxRadius - minRadius)) + epsilon;
+    }
+
+    getMass() {
+        return this.#atomicMass;
+    }
+
+    getColor() {
+        const colorMap = ["red", "blue", "purple", ];
+        return colorMap[this.#atomicNumber % colorMap.length];
+    }
+
+    getBonds() {
+        return this.#bonds;
     }
 }
 

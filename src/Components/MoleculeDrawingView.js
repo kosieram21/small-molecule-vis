@@ -412,14 +412,11 @@ function MoleculeDrawingView({ solution }) {
                 }
             });
         };
-
-        const rng = (min, max) => {
-            return Math.random() * (max - min) + min;
-        };
     
         const onClick = (event) => {
             PeriodicTable.load().then(periodicTable => {
                 if (selectedElementRef.current) {
+                    const rng = (min, max) => Math.random() * (max - min) + min;
                     const solutionCoords = getSolutionCoordinates(event.clientX, event.clientY);
                     const element = periodicTable.getElement(selectedElementRef.current);
                     hoveredAtom = new Atom([solutionCoords.x, solutionCoords.y, rng(-0.1, 0.1)], 
@@ -446,6 +443,10 @@ function MoleculeDrawingView({ solution }) {
         const onMouseDown = async (event) => {
             selectedAtom = checkAtomCollision(event.clientX, event.clientY);
             selectedBond = checkBondCollision(event.clientX, event.clientY);
+
+            if (selectedAtom) {
+                selectedAtom.setAnchor(true);
+            }
 
             if (event.shiftKey) {
                 if (selectedAtom) {
@@ -474,7 +475,11 @@ function MoleculeDrawingView({ solution }) {
             if (!event.shiftKey && !dragging) {
                 await checkBondCoherence();
             }
-            
+
+            if (selectedAtom) {
+                selectedAtom.setAnchor(false);
+            }
+
             selectedAtom = null;
             selectedBond = null;
 

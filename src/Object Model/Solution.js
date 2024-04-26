@@ -55,7 +55,7 @@ class Solution {
     }
 
     #computeHookeForce(atom1, atom2, bond) {
-        const bondLength = bond.getLength() / 200;
+        const bondLength = bond.getLength() / 450;
         const bondEnergy = bond.getEnergy() / 2000000;
 
         const [x1, y1, z1] = atom1.getPosition();
@@ -104,8 +104,10 @@ class Solution {
                 }
             });
 
-            atom1.updateVelocity();
-            atom1.updatePosition();
+            if (!atom1.isAnchored()) {
+                atom1.updateVelocity();
+                atom1.updatePosition();
+            }
         });
     }
 }
