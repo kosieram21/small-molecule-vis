@@ -388,8 +388,8 @@ function MoleculeDrawingView({ solution }) {
         const checkBondCoherence = async () => {
             return BondTable.load().then(bondTable => {
                 const bondType = selectedBondRef.current;
-                if (bondType) {
-                    if (selectedAtom && hoveredAtom && selectedAtom != hoveredAtom) {
+                if (selectedAtom && hoveredAtom && selectedAtom != hoveredAtom) {
+                    if (bondType) {
                         try {
                             const element1 = selectedAtom.getSymbol();
                             const element2 = hoveredAtom.getSymbol();
@@ -405,10 +405,10 @@ function MoleculeDrawingView({ solution }) {
                         } catch(error) {
                             addAlert(error.message, 'error');
                         }
+                    } else {
+                        const message = 'Please select a bond type!';
+                        addAlert(message, 'info');
                     }
-                } else if (hoveredAtom) {
-                    const message = 'Please select a bond type!';
-                    addAlert(message, 'info');
                 }
             });
         };
