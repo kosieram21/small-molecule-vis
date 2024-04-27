@@ -228,7 +228,7 @@ function MoleculeDrawingView({ solution }) {
             const canvasCoords = getCanvasCoordinates(x, y);
     
             const text = new Two.Text(symbol, canvasCoords.x, canvasCoords.y);
-            text.fill = color;
+            text.fill = 'black'//color;
             text.alignment = 'center';
             text.baseline = 'middle';
             text.size = getCanvasFontSize(atomicRadius);
@@ -423,7 +423,8 @@ function MoleculeDrawingView({ solution }) {
                         element.getSymbol(), 
                         element.getAtomicNumber(),
                         element.getAtomicMass(),
-                        element.getAtomicRadius());
+                        element.getAtomicRadius(),
+                        element.getColor());
                     solution.addAtom(hoveredAtom);
                 } else {
                     const message = 'Please select an element!';

@@ -8,9 +8,10 @@ class Atom {
     #atomicNumber;
     #atomicMass;
     #atomicRadius;
+    #color;
     #bonds;
 
-    constructor(position, symbol, atomicNumber, atomicMass, atomicRadius) {
+    constructor(position, symbol, atomicNumber, atomicMass, atomicRadius, color) {
         this.#position = position;
         this.#velocity = [0, 0, 0];
         this.#force = [0, 0, 0];
@@ -20,6 +21,7 @@ class Atom {
         this.#atomicNumber = atomicNumber;
         this.#atomicMass = atomicMass;
         this.#atomicRadius = atomicRadius;
+        this.#color = color;
         this.#bonds = new Set();
     }
 
@@ -108,8 +110,7 @@ class Atom {
     }
 
     getColor() {
-        const colorMap = ["red", "blue", "purple", ];
-        return colorMap[this.#atomicNumber % colorMap.length];
+        return this.#color;
     }
 
     getBonds() {

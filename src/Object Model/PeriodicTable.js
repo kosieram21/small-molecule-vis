@@ -30,6 +30,10 @@ class Element {
     getAtomicMass() {
         return this.#metadata.AtomicMass;
     }
+
+    getColor() {
+        return this.#metadata.Color;
+    }
 }
 
 class PeriodicTable {
