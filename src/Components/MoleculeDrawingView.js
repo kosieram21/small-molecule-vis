@@ -20,9 +20,9 @@ function MoleculeDrawingView({ solution }) {
 
         two.scene.translation.set(two.width / 2, two.height / 2);
 
-        let panning = false, dragging = false;
+        let panning = false, dragging = false, anchoring = false;
         let prevX, prevY;
-        let selectedAtom, hoveredAtom;
+        let selectedAtom, hoveredAtom, draggedAtom;
         let selectedBond, hoveredBond;
 
         const getSolutionCoordinates = (clientX, clientY) => {
@@ -54,8 +54,8 @@ function MoleculeDrawingView({ solution }) {
             return 4;
         };
 
-        const getHighlightColor = () => {
-            return 'rgba(173, 216, 230, 0.5)'
+        const getHighlightColor = (isAnchored) => {
+            return isAnchored ? 'rgba(255, 173, 173, 0.5)' : 'rgba(173, 216, 230, 0.5)'
         };
 
         const renderGrid = () => {
@@ -257,7 +257,7 @@ function MoleculeDrawingView({ solution }) {
         };
 
         const renderAtomHighlights = (atom) => {
-            if (atom === selectedAtom || atom === hoveredAtom) {
+            if (atom === selectedAtom || atom === hoveredAtom || atom.isAnchored()) {
                 const [x, y] = atom.getPosition();
                 const atomicRadius = atom.getAtomicRadius();
 
@@ -265,7 +265,7 @@ function MoleculeDrawingView({ solution }) {
                 const canvasRadius = getCanvasRadius(atomicRadius);
 
                 const highlight = new Two.Circle(canvasCoords.x, canvasCoords.y, canvasRadius);
-                highlight.fill = getHighlightColor();
+                highlight.fill = getHighlightColor(atom.isAnchored());
                 highlight.noStroke();
                 two.add(highlight);
             }
@@ -445,8 +445,12 @@ function MoleculeDrawingView({ solution }) {
             selectedAtom = checkAtomCollision(event.clientX, event.clientY);
             selectedBond = checkBondCollision(event.clientX, event.clientY);
 
-            if (selectedAtom) {
-                selectedAtom.setAnchor(true);
+            if (selectedAtom && anchoring) {
+                const isAnchored = selectedAtom.isAnchored();
+                selectedAtom.setAnchor(!isAnchored);
+            } else if (selectedAtom && dragging) {
+                draggedAtom = selectedAtom;
+                draggedAtom.setAnchor(true);
             }
 
             if (event.shiftKey) {
@@ -477,8 +481,9 @@ function MoleculeDrawingView({ solution }) {
                 await checkBondCoherence();
             }
 
-            if (selectedAtom) {
-                selectedAtom.setAnchor(false);
+            if (draggedAtom) {
+                draggedAtom.setAnchor(false);
+                draggedAtom = null;
             }
 
             selectedAtom = null;
@@ -518,11 +523,19 @@ function MoleculeDrawingView({ solution }) {
             if (event.code === 'Space') {
                 dragging = true;
             }
+
+            if (event.key === 'a' || event.key === 'A') {
+                anchoring = true;
+            }
         };
 
         const onKeyUp = (event) => {
             if (event.code === 'Space') {
                 dragging = false;
+            }
+
+            if (event.key === 'a' || event.key === 'A') {
+                anchoring = false;
             }
         };
 
