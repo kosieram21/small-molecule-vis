@@ -387,8 +387,8 @@ function MoleculeDrawingView({ solution }) {
 
         const checkBondCoherence = async () => {
             return BondTable.load().then(bondTable => {
-                const bondType = selectedBondRef.current;
                 if (selectedAtom && hoveredAtom && selectedAtom != hoveredAtom) {
+                    const bondType = selectedBondRef.current;
                     if (bondType) {
                         try {
                             const element1 = selectedAtom.getSymbol();
@@ -415,11 +415,12 @@ function MoleculeDrawingView({ solution }) {
     
         const onClick = (event) => {
             PeriodicTable.load().then(periodicTable => {
-                if (selectedElementRef.current) {
+                const selectedElement = selectedElementRef.current;
+                if (selectedElement) {
                     const rng = (min, max) => Math.random() * (max - min) + min;
                     const solutionCoords = getSolutionCoordinates(event.clientX, event.clientY);
-                    const element = periodicTable.getElement(selectedElementRef.current);
-                    hoveredAtom = new Atom([solutionCoords.x, solutionCoords.y, rng(-0.1, 0.1)], 
+                    const element = periodicTable.getElement(selectedElement);
+                    hoveredAtom = new Atom([solutionCoords.x, solutionCoords.y, rng(-0.01, 0.01)], 
                         element.getSymbol(), 
                         element.getAtomicNumber(),
                         element.getAtomicMass(),

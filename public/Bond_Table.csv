@@ -1,4 +1,15 @@
 Element1,Element2,BondType,BondLength,BondEnergy
+..,I,Single,141,299
+..,Br,Single,122,366
+..,Cl,Single,107,431
+..,S,Single,112,347
+..,P,Single,118,322
+..,Si,Single,125,323
+..,F,Single,72,566
+..,O,Single,74,467
+..,N,Single,78,391
+..,C,Single,90,416
+..,H,Single,54,436
 H,I,Single,161,299
 H,Br,Single,142,366
 H,Cl,Single,127,431

@@ -210,8 +210,44 @@ function MoleculeSimulationView({ solution }) {
       scene.add(sphere);
     };
 
+    const renderLonePair = (lonePair) => {
+      const bond = lonePair.getBonds().values().next().value;
+      if (bond) {
+        const atom = bond.getOtherAtom(lonePair);
+
+        const [startX, startY, startZ] = atom.getPosition();
+        const [x, y, z] = lonePair.getPosition();
+
+        const [sceneStartX, sceneStartY, sceneStartZ] = getSceneCoordinates(startX, startY, startZ);
+        const [sceneX, sceneY, sceneZ] = getSceneCoordinates(x, y, z);
+
+        const start = new THREE.Vector3(sceneStartX, sceneStartY, sceneStartZ);
+        const end = new THREE.Vector3(sceneX, sceneY, sceneZ);
+
+        const direction = new THREE.Vector3().subVectors(end, start).normalize().multiplyScalar(0.1);
+        const offset= new THREE.Vector3(-direction.y, direction.x, direction.z);
+
+        const geometry = new THREE.SphereGeometry(0.05, 32, 32);
+        const material = new THREE.MeshPhongMaterial({ color: 'white', shininess: 50 });
+
+        const sphere1 = new THREE.Mesh(geometry, material);
+        sphere1.position.copy(end).add(offset).add(direction);
+        scene.add(sphere1);
+
+        const sphere2 = new THREE.Mesh(geometry, material);
+        sphere2.position.copy(end).sub(offset).add(direction);
+        scene.add(sphere2);
+      }
+    }
+
     const renderMolecules = () => {
-      solution.getAtoms().forEach(atom => renderAtom(atom));
+      solution.getAtoms().forEach(atom => {
+        if (atom.getSymbol() == '..') {
+          renderLonePair(atom);
+        } else {
+          renderAtom(atom);
+        }
+      });
       solution.getBonds().forEach(bond => renderBond(bond));
     };
 
