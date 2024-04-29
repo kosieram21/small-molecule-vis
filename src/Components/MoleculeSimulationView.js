@@ -8,18 +8,21 @@ function MoleculeSimulationView({ solution }) {
   const { simulationEnabled } = useAppContext();
   const simulationEnabledRef = useRef(simulationEnabled);
 
-  const sceneRef = useRef(new THREE.Scene());
-  const cameraRef = useRef(new THREE.PerspectiveCamera(75, 1, 0.1, 1000));
+  //const sceneRef = useRef(new THREE.Scene());
+  //const cameraRef = useRef(new THREE.PerspectiveCamera(75, 1, 0.1, 1000));
   const rendererRef = useRef(new THREE.WebGLRenderer({ antialias: true, powerPreference: "high-performance" }));
-  const controlsRef = useRef(new ArcballControls(cameraRef.current, rendererRef.current.domElement))
+  //const controlsRef = useRef(new ArcballControls(cameraRef.current, rendererRef.current.domElement))
 
   useEffect(() => {
-    const scene = sceneRef.current;
-    const camera = cameraRef.current;
+    //const scene = sceneRef.current;
+    //const camera = cameraRef.current;
     const renderer = rendererRef.current;
-    const controls = controlsRef.current;
+    //const controls = controlsRef.current;
 
-    camera.position.set(0, 0, 5);
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(75, 1, 0.1, 1000);
+    //const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: "high-performance" });
+    const controls = new ArcballControls(camera, rendererRef.current.domElement)
 
     //renderer.setClearColor(0xffffff);
     renderer.setPixelRatio(window.devicePixelRatio);
@@ -28,6 +31,9 @@ function MoleculeSimulationView({ solution }) {
     controls.maxDistance = 100;
     controls.enableDamping = true;
     controls.dampingFactor = 0.05;
+
+    camera.position.set(0, 0, 5);
+    controls.update();
 
     const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
     const directionalLight = new THREE.DirectionalLight(0xffffff, 2);
@@ -253,6 +259,8 @@ function MoleculeSimulationView({ solution }) {
 
     let animationFrameId;
     const animate = () => {
+      animationFrameId = requestAnimationFrame(animate);
+
       clearScene();
       setupLights();
 
@@ -263,7 +271,6 @@ function MoleculeSimulationView({ solution }) {
       
       controls.update();
       renderer.render(scene, camera);
-      animationFrameId = requestAnimationFrame(animate);
     };
 
     animate();
@@ -278,8 +285,9 @@ function MoleculeSimulationView({ solution }) {
       cancelAnimationFrame(animationFrameId);
       clearScene();
 
-      renderer.dispose();
       renderer.domElement.removeEventListener('contextmenu', onContextMenu);
+      renderer.dispose();
+      controls.dispose();
     };
   }, [solution]);
 
