@@ -8,21 +8,13 @@ function MoleculeSimulationView({ solution }) {
   const { simulationEnabled } = useAppContext();
   const simulationEnabledRef = useRef(simulationEnabled);
 
-  //const sceneRef = useRef(new THREE.Scene());
-  //const cameraRef = useRef(new THREE.PerspectiveCamera(75, 1, 0.1, 1000));
   const rendererRef = useRef(new THREE.WebGLRenderer({ antialias: true, powerPreference: "high-performance" }));
-  //const controlsRef = useRef(new ArcballControls(cameraRef.current, rendererRef.current.domElement))
 
   useEffect(() => {
-    //const scene = sceneRef.current;
-    //const camera = cameraRef.current;
     const renderer = rendererRef.current;
-    //const controls = controlsRef.current;
-
     const scene = new THREE.Scene();
     const camera = new THREE.PerspectiveCamera(75, 1, 0.1, 1000);
-    //const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: "high-performance" });
-    const controls = new ArcballControls(camera, rendererRef.current.domElement)
+    const controls = new ArcballControls(camera, renderer.domElement)
 
     //renderer.setClearColor(0xffffff);
     renderer.setPixelRatio(window.devicePixelRatio);

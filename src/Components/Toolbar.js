@@ -26,24 +26,6 @@ function Toolbar({ solution }) {
     gridEnabled, setGridEnabled, 
     simulationEnabled, setSimulationEnabled } = useAppContext();
 
-  useEffect(() => {
-    PeriodicTable.load().then(periodicTable => {
-      const loadedOptions = periodicTable.getElements().map(element => ({
-        value: element.getName(),
-        label: element.getName(),
-      }));
-      setElementOptions(loadedOptions);
-    });
-
-    BondTable.load().then(bondTable => {
-      const loadedOptions = bondTable.getBondTypes().map(bondType => ({
-        value: bondType,
-        label: bondType
-      }));
-      setBondOptions(loadedOptions);
-    });
-  }, []);
-
   const elementComboBoxOnChange = (event, selectedOption) => {
     setSelectedElement(selectedOption ? selectedOption.value : selectedOption);
   };
@@ -86,15 +68,70 @@ function Toolbar({ solution }) {
     setColorEnabled(!colorEnabled);
   };
 
+  useEffect(() => {
+    PeriodicTable.load().then(periodicTable => {
+      const loadedOptions = periodicTable.getElements().map(element => ({
+        value: element.getName(),
+        label: element.getName(),
+      }));
+      setElementOptions(loadedOptions);
+    });
+
+    BondTable.load().then(bondTable => {
+      const loadedOptions = bondTable.getBondTypes().map(bondType => ({
+        value: bondType,
+        label: bondType
+      }));
+      setBondOptions(loadedOptions);
+    });
+  }, []);
+
+  useEffect(() => {
+    const onKeyDown = (event) => {
+      const elementComboBox = document.getElementById("element-combo-box");
+      const bondTypeComboBox = document.getElementById("bond-type-combo-box");
+      if (document.activeElement !== elementComboBox && document.activeElement !== bondTypeComboBox) {
+        switch (event.key) {
+          case 'd':
+          case 'D':
+            deleteButtonOnClick();
+            break;
+          case 'm':
+          case 'M':
+            moveButtonOnClick();
+            break;
+          case 'a':
+          case 'A':
+            anchorButtonOnClick();
+            break;
+          case 'c':
+          case 'C':
+            colorButtonOnClick();
+            break;
+          default:
+            break;
+        }
+      }
+    };
+
+    window.addEventListener('keydown', onKeyDown);
+
+    return () => {
+      window.removeEventListener('keydown', onKeyDown);
+    };
+  }, [deleteEnabled, moveEnabled, anchorEnabled, colorEnabled]);
+
   return (
     <div className='toolbar'>
       <Button className='text-button' startIcon={<ClearIcon />} onClick={clearButtonOnClick}>
         <span className="button-label">Clear</span>
       </Button>
       <Autocomplete className='combo-box' options={elementOptions} onChange={elementComboBoxOnChange}
-        renderInput={(params) => <TextField {...params} label="Element" variant="standard" />}/>
+        renderInput={(params) => (
+          <TextField {...params} label="Element" variant="standard"  inputProps={{ ...params.inputProps, id: 'element-combo-box' }}/>)}/>
       <Autocomplete className='combo-box' options={bondOptions} onChange={bondTypeComboBoxOnChange}
-        renderInput={(params) => <TextField {...params} label="Bond Type" variant="standard"/>}/>
+        renderInput={(params) => (
+          <TextField {...params} label="Bond Type" variant="standard" inputProps={{ ...params.inputProps, id: 'bond-type-combo-box' }}/>)}/>
       <Button className='icon-button' startIcon={<DeleteIcon />} onClick={deleteButtonOnClick} 
         color={deleteEnabled ? 'secondary' : 'primary'}/>
       <Button className='icon-button' startIcon={<OpenWithIcon />} onClick={moveButtonOnClick}

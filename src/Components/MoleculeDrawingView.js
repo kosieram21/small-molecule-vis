@@ -8,9 +8,16 @@ import Atom from '../Object Model/Atom.js';
 import Bond from '../Object Model/Bond.js';
 
 function MoleculeDrawingView({ solution }) {
-    const { selectedElement, selectedBond, colorEnabled, gridEnabled, addAlert } = useAppContext();
+    const { 
+        selectedElement, selectedBond, 
+        deleteEnabled, moveEnabled, 
+        anchorEnabled, colorEnabled, 
+        gridEnabled, addAlert } = useAppContext();
     const selectedElementRef = useRef(selectedElement);
     const selectedBondRef = useRef(selectedBond);
+    const deleteEnabledRef = useRef(deleteEnabled);
+    const moveEnabledRef = useRef(moveEnabled);
+    const anchorEnabledRef = useRef(anchorEnabled);
     const colorEnabledRef = useRef(colorEnabled);
     const gridEnabledRef = useRef(gridEnabled);
 
@@ -21,7 +28,7 @@ function MoleculeDrawingView({ solution }) {
 
         two.scene.translation.set(two.width / 2, two.height / 2);
 
-        let panning = false, dragging = false, anchoring = false;
+        let panning = false;
         let prevX, prevY;
         let selectedAtom, hoveredAtom, draggedAtom;
         let selectedBond, hoveredBond;
@@ -211,7 +218,8 @@ function MoleculeDrawingView({ solution }) {
         };
 
         const renderCurrentBond = () => {
-            if (selectedAtom && selectedAtom != hoveredAtom) {
+            if (!deleteEnabledRef.current && !moveEnabledRef.current && !anchorEnabledRef.current && 
+                selectedAtom && selectedAtom != hoveredAtom) {
                 const bondType = selectedBondRef.current;
                 const clientCoords = getSolutionCoordinates(prevX, prevY);
                 if (bondType) {
@@ -427,24 +435,26 @@ function MoleculeDrawingView({ solution }) {
         };
     
         const onClick = (event) => {
-            PeriodicTable.load().then(periodicTable => {
-                const selectedElement = selectedElementRef.current;
-                if (selectedElement) {
-                    const rng = (min, max) => Math.random() * (max - min) + min;
-                    const solutionCoords = getSolutionCoordinates(event.clientX, event.clientY);
-                    const element = periodicTable.getElement(selectedElement);
-                    hoveredAtom = new Atom([solutionCoords.x, solutionCoords.y, rng(-0.01, 0.01)], 
-                        element.getSymbol(), 
-                        element.getAtomicNumber(),
-                        element.getAtomicMass(),
-                        element.getAtomicRadius(),
-                        element.getColor());
-                    solution.addAtom(hoveredAtom);
-                } else {
-                    const message = 'Please select an element!';
-                    addAlert(message, 'info');
-                }
-            });
+            if (!deleteEnabledRef.current && !moveEnabledRef.current && !anchorEnabledRef.current) {
+                PeriodicTable.load().then(periodicTable => {
+                    const selectedElement = selectedElementRef.current;
+                    if (selectedElement) {
+                        const rng = (min, max) => Math.random() * (max - min) + min;
+                        const solutionCoords = getSolutionCoordinates(event.clientX, event.clientY);
+                        const element = periodicTable.getElement(selectedElement);
+                        hoveredAtom = new Atom([solutionCoords.x, solutionCoords.y, rng(-0.01, 0.01)], 
+                            element.getSymbol(), 
+                            element.getAtomicNumber(),
+                            element.getAtomicMass(),
+                            element.getAtomicRadius(),
+                            element.getColor());
+                        solution.addAtom(hoveredAtom);
+                    } else {
+                        const message = 'Please select an element!';
+                        addAlert(message, 'info');
+                    }
+                });
+            }
         };
 
         const onScroll = (event) => {
@@ -459,29 +469,21 @@ function MoleculeDrawingView({ solution }) {
             selectedAtom = checkAtomCollision(event.clientX, event.clientY);
             selectedBond = checkBondCollision(event.clientX, event.clientY);
 
-            if (selectedAtom && anchoring) {
+            if (selectedAtom && anchorEnabledRef.current) {
                 const isAnchored = selectedAtom.isAnchored();
                 selectedAtom.setAnchor(!isAnchored);
-            } else if (selectedAtom && dragging) {
+            } else if (selectedAtom && moveEnabledRef.current) {
                 draggedAtom = selectedAtom;
                 draggedAtom.setAnchor(true);
-            }
-
-            if (event.shiftKey) {
-                if (selectedAtom) {
-                    solution.removeAtom(selectedAtom);
-                    selectedAtom = null;
-                }
-
-                if (selectedBond) {
-                    solution.removeBond(selectedBond);
-                    selectedBond = null;
-                }
+            } else if (selectedAtom && deleteEnabledRef.current) {
+                solution.removeAtom(selectedAtom);
+                selectedAtom = null;
+            } else if (selectedBond && deleteEnabledRef.current) {
+                solution.removeBond(selectedBond);
+                selectedBond = null;
             } else if (!selectedAtom && selectedBond) {
                 await cycleBondType(selectedBond);
-            }
-
-            if (event.button === 2) {
+            } else if (event.button === 2) {
                 event.preventDefault();
                 panning = true;
             }
@@ -491,21 +493,18 @@ function MoleculeDrawingView({ solution }) {
         };
 
         const onMouseUp = async (event) => {
-            if (!event.shiftKey && !dragging) {
+            if (!deleteEnabledRef.current && !moveEnabledRef.current && !anchorEnabledRef.current &&
+                selectedAtom && hoveredAtom && selectedAtom != hoveredAtom) {
                 await checkBondCoherence();
-            }
-
-            if (draggedAtom) {
+            } else if (draggedAtom) {
                 draggedAtom.setAnchor(false);
                 draggedAtom = null;
+            } else if (event.button === 2) {
+                panning = false;
             }
 
             selectedAtom = null;
             selectedBond = null;
-
-            if (event.button === 2) {
-                panning = false;
-            }
         };
 
         const onMouseMove = (event) => {
@@ -521,9 +520,7 @@ function MoleculeDrawingView({ solution }) {
                     two.scene.translation.x + dx, 
                     two.scene.translation.y + dy
                 );
-            }
-
-            if (!panning && dragging && selectedAtom) {
+            } else if (moveEnabledRef.current && selectedAtom) {
                 const solutionCoords = getSolutionCoordinates(event.clientX, event.clientY);
                 selectedAtom.setXPosition(solutionCoords.x);
                 selectedAtom.setYPosition(solutionCoords.y);
@@ -531,26 +528,6 @@ function MoleculeDrawingView({ solution }) {
 
             prevX = event.clientX;
             prevY = event.clientY;
-        };
-
-        const onKeyDown = (event) => {
-            if (event.code === 'Space') {
-                dragging = true;
-            }
-
-            if (event.key === 'a' || event.key === 'A') {
-                anchoring = true;
-            }
-        };
-
-        const onKeyUp = (event) => {
-            if (event.code === 'Space') {
-                dragging = false;
-            }
-
-            if (event.key === 'a' || event.key === 'A') {
-                anchoring = false;
-            }
         };
 
         const onContextMenu = (event) => {
@@ -567,8 +544,6 @@ function MoleculeDrawingView({ solution }) {
         two.renderer.domElement.addEventListener('contextmenu', onContextMenu);
 
         window.addEventListener('mouseup', onMouseUp);
-        window.addEventListener('keydown', onKeyDown);
-        window.addEventListener('keyup', onKeyUp);
 
         return () => {
             two.pause();
@@ -582,8 +557,6 @@ function MoleculeDrawingView({ solution }) {
             two.renderer.domElement.removeEventListener('contextmenu', onContextMenu);
 
             window.removeEventListener('mouseup', onMouseUp);
-            window.removeEventListener('keydown', onkeydown);
-            window.removeEventListener('keyup', onkeyup);
         };
     }, [solution]);
 
@@ -594,6 +567,18 @@ function MoleculeDrawingView({ solution }) {
     useEffect(() => {
         selectedBondRef.current = selectedBond;
     }, [selectedBond]);
+
+    useEffect(() => {
+        deleteEnabledRef.current = deleteEnabled;
+    }, [deleteEnabled]);
+
+    useEffect(() => {
+        moveEnabledRef.current = moveEnabled;
+    }, [moveEnabled]);
+
+    useEffect(() => {
+        anchorEnabledRef.current = anchorEnabled;
+    }, [anchorEnabled]);
 
     useEffect(() => {
         colorEnabledRef.current = colorEnabled;
