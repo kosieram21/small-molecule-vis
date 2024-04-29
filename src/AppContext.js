@@ -5,6 +5,9 @@ const AppContext = createContext();
 export const AppContextProvider = ({ children }) => {
     const [selectedElement, setSelectedElement] = useState("");
     const [selectedBond, setSelectedBond] = useState("");
+    const [deleteEnabled, setDeleteEnabled] = useState(false);
+    const [moveEnabled, setMoveEnabled] = useState(false);
+    const [anchorEnabled, setAnchorEnabled] = useState(false);
     const [gridEnabled, setGridEnabled] = useState(true);
     const [simulationEnabled, setSimulationEnabled] = useState(false);
     const [alerts, setAlerts] = useState([]);
@@ -21,6 +24,9 @@ export const AppContextProvider = ({ children }) => {
     const value = { 
         selectedElement, setSelectedElement, 
         selectedBond, setSelectedBond, 
+        deleteEnabled, setDeleteEnabled,
+        moveEnabled, setMoveEnabled,
+        anchorEnabled, setAnchorEnabled,
         gridEnabled, setGridEnabled,
         simulationEnabled, setSimulationEnabled,
         alerts, addAlert, removeAlert

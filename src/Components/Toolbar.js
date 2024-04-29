@@ -17,7 +17,12 @@ import BondTable from '../Object Model/BondTable'
 function Toolbar({ solution }) {
   const [elementOptions, setElementOptions] = useState([]);
   const [bondOptions, setBondOptions] = useState([]);
-  const { setSelectedElement, setSelectedBond, gridEnabled, setGridEnabled, simulationEnabled, setSimulationEnabled } = useAppContext();
+  const { setSelectedElement, setSelectedBond, 
+    deleteEnabled, setDeleteEnabled, 
+    moveEnabled, setMoveEnabled,
+    anchorEnabled, setAnchorEnabled,
+    gridEnabled, setGridEnabled, 
+    simulationEnabled, setSimulationEnabled } = useAppContext();
 
   useEffect(() => {
     PeriodicTable.load().then(periodicTable => {
@@ -53,22 +58,43 @@ function Toolbar({ solution }) {
     setSimulationEnabled(event.target.checked);
   };
 
-  const deleteButtonOnClick = () => {
+  const clearButtonOnClick = () => {
     solution.clear();
+  };
+
+  const deleteButtonOnClick = () => {
+    setDeleteEnabled(!deleteEnabled);
+    setMoveEnabled(false);
+    setAnchorEnabled(false);
+  };
+
+  const moveButtonOnClick = () => {
+    setDeleteEnabled(false);
+    setMoveEnabled(!moveEnabled);
+    setAnchorEnabled(false);
+  };
+
+  const anchorButtonOnClick = () => {
+    setDeleteEnabled(false);
+    setMoveEnabled(false);
+    setAnchorEnabled(!anchorEnabled);
   };
 
   return (
     <div className='toolbar'>
-      <Button className='text-button' startIcon={<ClearIcon />} onClick={deleteButtonOnClick}>
+      <Button className='text-button' startIcon={<ClearIcon />} onClick={clearButtonOnClick}>
         <span className="button-label">Clear</span>
       </Button>
       <Autocomplete className='combo-box' options={elementOptions} onChange={elementComboBoxOnChange}
         renderInput={(params) => <TextField {...params} label="Element" variant="standard" />}/>
       <Autocomplete className='combo-box' options={bondOptions} onChange={bondTypeComboBoxOnChange}
         renderInput={(params) => <TextField {...params} label="Bond Type" variant="standard"/>}/>
-      <Button className='icon-button' startIcon={<DeleteIcon />}/>
-      <Button className='icon-button' startIcon={<OpenWithIcon />}/>
-      <Button className='icon-button' startIcon={<AnchorIcon />}/>
+      <Button className='icon-button' startIcon={<DeleteIcon />} onClick={deleteButtonOnClick} 
+        color={deleteEnabled ? 'secondary' : 'primary'}/>
+      <Button className='icon-button' startIcon={<OpenWithIcon />} onClick={moveButtonOnClick}
+        color={moveEnabled ? 'secondary' : 'primary'}/>
+      <Button className='icon-button' startIcon={<AnchorIcon />} onClick={anchorButtonOnClick}
+        color={anchorEnabled ? 'secondary' : 'primary'}/>
       <FormControlLabel className='check-box' label="Grid" labelPlacement="start"
         control={<Checkbox checked={gridEnabled} onChange={gridCheckBoxOnChange}/>}/>
       <FormControlLabel className='switch' label="Simulation" labelPlacement="start"
