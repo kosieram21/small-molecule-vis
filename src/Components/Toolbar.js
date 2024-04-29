@@ -8,6 +8,7 @@ import ClearIcon from '@mui/icons-material/Clear';
 import DeleteIcon from '@mui/icons-material/Delete';
 import OpenWithIcon from '@mui/icons-material/OpenWith';
 import AnchorIcon from '@mui/icons-material/Anchor';
+import PaletteIcon from '@mui/icons-material/Palette';
 import Checkbox from '@mui/material/Checkbox';
 import Switch from '@mui/material/Switch';
 import { useAppContext } from '../AppContext';
@@ -21,6 +22,7 @@ function Toolbar({ solution }) {
     deleteEnabled, setDeleteEnabled, 
     moveEnabled, setMoveEnabled,
     anchorEnabled, setAnchorEnabled,
+    colorEnabled, setColorEnabled,
     gridEnabled, setGridEnabled, 
     simulationEnabled, setSimulationEnabled } = useAppContext();
 
@@ -80,6 +82,10 @@ function Toolbar({ solution }) {
     setAnchorEnabled(!anchorEnabled);
   };
 
+  const colorButtonOnClick = () => {
+    setColorEnabled(!colorEnabled);
+  };
+
   return (
     <div className='toolbar'>
       <Button className='text-button' startIcon={<ClearIcon />} onClick={clearButtonOnClick}>
@@ -95,6 +101,8 @@ function Toolbar({ solution }) {
         color={moveEnabled ? 'secondary' : 'primary'}/>
       <Button className='icon-button' startIcon={<AnchorIcon />} onClick={anchorButtonOnClick}
         color={anchorEnabled ? 'secondary' : 'primary'}/>
+      <Button className='icon-button' startIcon={<PaletteIcon />} onClick={colorButtonOnClick}
+        color={colorEnabled ? 'secondary' : 'primary'}/>
       <FormControlLabel className='check-box' label="Grid" labelPlacement="start"
         control={<Checkbox checked={gridEnabled} onChange={gridCheckBoxOnChange}/>}/>
       <FormControlLabel className='switch' label="Simulation" labelPlacement="start"

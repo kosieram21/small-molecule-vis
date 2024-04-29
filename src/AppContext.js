@@ -8,6 +8,7 @@ export const AppContextProvider = ({ children }) => {
     const [deleteEnabled, setDeleteEnabled] = useState(false);
     const [moveEnabled, setMoveEnabled] = useState(false);
     const [anchorEnabled, setAnchorEnabled] = useState(false);
+    const [colorEnabled, setColorEnabled] = useState(true);
     const [gridEnabled, setGridEnabled] = useState(true);
     const [simulationEnabled, setSimulationEnabled] = useState(false);
     const [alerts, setAlerts] = useState([]);
@@ -27,6 +28,7 @@ export const AppContextProvider = ({ children }) => {
         deleteEnabled, setDeleteEnabled,
         moveEnabled, setMoveEnabled,
         anchorEnabled, setAnchorEnabled,
+        colorEnabled, setColorEnabled,
         gridEnabled, setGridEnabled,
         simulationEnabled, setSimulationEnabled,
         alerts, addAlert, removeAlert

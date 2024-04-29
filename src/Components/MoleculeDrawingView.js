@@ -8,9 +8,10 @@ import Atom from '../Object Model/Atom.js';
 import Bond from '../Object Model/Bond.js';
 
 function MoleculeDrawingView({ solution }) {
-    const { selectedElement, selectedBond, gridEnabled, addAlert } = useAppContext();
+    const { selectedElement, selectedBond, colorEnabled, gridEnabled, addAlert } = useAppContext();
     const selectedElementRef = useRef(selectedElement);
     const selectedBondRef = useRef(selectedBond);
+    const colorEnabledRef = useRef(colorEnabled);
     const gridEnabledRef = useRef(gridEnabled);
 
     const twoRef = useRef(new Two());
@@ -48,6 +49,19 @@ function MoleculeDrawingView({ solution }) {
         const getCanvasFontSize = (atomicRadius) => {
             const fontSize = 30 + 60 * atomicRadius;
             return fontSize;
+        };
+
+        const getTextColor = (atom) => {
+            if (colorEnabledRef.current) {
+                if (atom.getSymbol() === 'C' || atom.getSymbol() === '..') {
+                    return 'black';
+                } else if (atom.getSymbol() == 'H') {
+                    return 'gray';
+                } else {
+                    return atom.getColor();
+                }
+            }
+            return 'black';
         };
 
         const getCanvasLineWidth = () => {
@@ -222,13 +236,12 @@ function MoleculeDrawingView({ solution }) {
         const renderAtom = (atom) => {
             const [x, y] = atom.getPosition();
             const symbol = atom.getSymbol();
-            const color = atom.getColor();
             const atomicRadius = atom.getAtomicRadius();
 
             const canvasCoords = getCanvasCoordinates(x, y);
     
             const text = new Two.Text(symbol, canvasCoords.x, canvasCoords.y);
-            text.fill = 'black'//color;
+            text.fill = getTextColor(atom);
             text.alignment = 'center';
             text.baseline = 'middle';
             text.size = getCanvasFontSize(atomicRadius);
@@ -581,6 +594,10 @@ function MoleculeDrawingView({ solution }) {
     useEffect(() => {
         selectedBondRef.current = selectedBond;
     }, [selectedBond]);
+
+    useEffect(() => {
+        colorEnabledRef.current = colorEnabled;
+    }, [colorEnabled]);
 
     useEffect(() => {
         gridEnabledRef.current = gridEnabled;
