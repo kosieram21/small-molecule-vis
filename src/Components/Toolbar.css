@@ -23,3 +23,11 @@
 .toolbar .check-box .MuiFormControlLabel-label {
     margin-top: 10px;
 }
+
+.toolbar .button .MuiButton-startIcon {
+    margin-top: 12px;
+}
+
+.toolbar .button .button-label {
+    margin-top: 12px;
+}

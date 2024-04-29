@@ -13,7 +13,7 @@ function App() {
 	return (
             <AppContextProvider>
                   <div className='app'>
-                        <Toolbar/>
+                        <Toolbar solution={solutionRef.current}/>
                         <div className='molecule-viewer-flex'>
                               <MoleculeDrawingView solution={solutionRef.current}/>
                               <MoleculeSimulationView solution={solutionRef.current}/>

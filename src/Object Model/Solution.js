@@ -32,6 +32,11 @@ class Solution {
         }
     }
 
+    clear() {
+        this.#atoms.clear();
+        this.#bonds.clear();
+    }
+
     getAtoms() {
         return this.#atoms;
     }
