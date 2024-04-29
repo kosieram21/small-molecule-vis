@@ -4,7 +4,10 @@ import TextField from '@mui/material/TextField';
 import Autocomplete from '@mui/material/Autocomplete';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import Button from '@mui/material/Button';
+import ClearIcon from '@mui/icons-material/Clear';
 import DeleteIcon from '@mui/icons-material/Delete';
+import OpenWithIcon from '@mui/icons-material/OpenWith';
+import AnchorIcon from '@mui/icons-material/Anchor';
 import Checkbox from '@mui/material/Checkbox';
 import Switch from '@mui/material/Switch';
 import { useAppContext } from '../AppContext';
@@ -56,13 +59,16 @@ function Toolbar({ solution }) {
 
   return (
     <div className='toolbar'>
+      <Button className='text-button' startIcon={<ClearIcon />} onClick={deleteButtonOnClick}>
+        <span className="button-label">Clear</span>
+      </Button>
       <Autocomplete className='combo-box' options={elementOptions} onChange={elementComboBoxOnChange}
         renderInput={(params) => <TextField {...params} label="Element" variant="standard" />}/>
       <Autocomplete className='combo-box' options={bondOptions} onChange={bondTypeComboBoxOnChange}
         renderInput={(params) => <TextField {...params} label="Bond Type" variant="standard"/>}/>
-      <Button className='button' startIcon={<DeleteIcon />} onClick={deleteButtonOnClick}>
-        <span className="button-label">Delete</span>
-      </Button>
+      <Button className='icon-button' startIcon={<DeleteIcon />}/>
+      <Button className='icon-button' startIcon={<OpenWithIcon />}/>
+      <Button className='icon-button' startIcon={<AnchorIcon />}/>
       <FormControlLabel className='check-box' label="Grid" labelPlacement="start"
         control={<Checkbox checked={gridEnabled} onChange={gridCheckBoxOnChange}/>}/>
       <FormControlLabel className='switch' label="Simulation" labelPlacement="start"
