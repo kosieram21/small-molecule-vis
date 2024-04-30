@@ -12,6 +12,10 @@ class Solution {
     }
 
     addBond(bond) {
+        const atom1 = bond.getAtom1();
+        const atom2 = bond.getAtom2();
+        atom1.addBond(bond);
+        atom2.addBond(bond);
         this.#bonds.add(bond);
     }
 
@@ -81,8 +85,8 @@ class Solution {
     }
 
     #computeCoulombForce(atom1, atom2) {
-        const q1 = atom1.getAtomicRadius();
-        const q2 = atom2.getAtomicRadius();
+        const q1 = atom1.getRadius();
+        const q2 = atom2.getRadius();
 
         const [x1, y1, z1] = atom1.getPosition();
         const [x2, y2, z2] = atom2.getPosition();

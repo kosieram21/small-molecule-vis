@@ -194,7 +194,7 @@ function MoleculeSimulationView({ solution }) {
     const renderAtom = (atom) => {
       const [x, y, z] = atom.getPosition();
       const color = atom.getColor();
-      const atomicRadius = atom.getAtomicRadius();
+      const atomicRadius = atom.getRadius();
 
       const [sceneX, sceneY, sceneZ] = getSceneCoordinates(x, y, z);
       const sceneRadius = getSceneRadius(atomicRadius);

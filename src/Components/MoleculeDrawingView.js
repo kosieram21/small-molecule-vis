@@ -223,8 +223,8 @@ function MoleculeDrawingView({ solution }) {
                 if (bondType) {
                     const [startX, startY] = selectedAtom.getPosition();
                     const [endX, endY] = hoveredAtom ? hoveredAtom.getPosition() : [clientCoords.x, clientCoords.y];
-                    const radius1 = selectedAtom.getAtomicRadius();
-                    const radius2 = hoveredAtom ? hoveredAtom.getAtomicRadius() : 0;
+                    const radius1 = selectedAtom.getRadius();
+                    const radius2 = hoveredAtom ? hoveredAtom.getRadius() : 0;
                     renderBondByType(bondType, startX, startY, endX, endY, radius1, radius2);
                 }
             }
@@ -234,15 +234,15 @@ function MoleculeDrawingView({ solution }) {
             const bondType = bond.getType();
             const [startX, startY] = bond.getAtom1().getPosition();
             const [endX, endY] = bond.getAtom2().getPosition();
-            const radius1 = bond.getAtom1().getAtomicRadius();
-            const radius2 = bond.getAtom2().getAtomicRadius();
+            const radius1 = bond.getAtom1().getRadius();
+            const radius2 = bond.getAtom2().getRadius();
             renderBondByType(bondType, startX, startY, endX, endY, radius1, radius2);
         };
 
         const renderAtom = (atom) => {
             const [x, y] = atom.getPosition();
             const symbol = atom.getSymbol();
-            const atomicRadius = atom.getAtomicRadius();
+            const atomicRadius = atom.getRadius();
 
             const canvasCoords = getCanvasCoordinates(x, y);
     
@@ -278,7 +278,7 @@ function MoleculeDrawingView({ solution }) {
         const renderAtomHighlights = (atom) => {
             if (atom === selectedAtom || atom === hoveredAtom || atom.isAnchored()) {
                 const [x, y] = atom.getPosition();
-                const atomicRadius = atom.getAtomicRadius();
+                const atomicRadius = atom.getRadius();
 
                 const canvasCoords = getCanvasCoordinates(x, y);
                 const canvasRadius = getCanvasRadius(atomicRadius);
@@ -314,7 +314,7 @@ function MoleculeDrawingView({ solution }) {
 
             for (const atom of solution.getAtoms()) {
                 const [x, y] = atom.getPosition();
-                const atomicRadius = atom.getAtomicRadius();
+                const atomicRadius = atom.getRadius();
         
                 const canvasAtomCoords = getCanvasCoordinates(x, y);
                 const canvasRadius = getCanvasRadius(atomicRadius);

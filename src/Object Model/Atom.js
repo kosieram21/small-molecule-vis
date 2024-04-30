@@ -6,12 +6,12 @@ class Atom {
 
     #symbol;
     #atomicNumber;
-    #atomicMass;
-    #atomicRadius;
+    #mass;
+    #radius;
     #color;
     #bonds;
 
-    constructor(position, symbol, atomicNumber, atomicMass, atomicRadius, color) {
+    constructor(position, symbol, atomicNumber, mass, radius, color) {
         this.#position = position;
         this.#velocity = [0, 0, 0];
         this.#force = [0, 0, 0];
@@ -19,8 +19,8 @@ class Atom {
 
         this.#symbol = symbol;
         this.#atomicNumber = atomicNumber;
-        this.#atomicMass = atomicMass;
-        this.#atomicRadius = atomicRadius;
+        this.#mass = mass;
+        this.#radius = radius;
         this.#color = color;
         this.#bonds = new Map();
     }
@@ -67,9 +67,9 @@ class Atom {
 
     updateVelocity() {
         const scalar = 100;
-        const accelerationX = this.#force[0] / this.#atomicMass * scalar;
-        const accelerationY = this.#force[1] / this.#atomicMass * scalar;
-        const accelerationZ = this.#force[2] / this.#atomicMass * scalar;
+        const accelerationX = this.#force[0] / this.#mass * scalar;
+        const accelerationY = this.#force[1] / this.#mass * scalar;
+        const accelerationZ = this.#force[2] / this.#mass * scalar;
 
         this.#velocity[0] += accelerationX;
         this.#velocity[1] += accelerationY;
@@ -98,15 +98,15 @@ class Atom {
         return this.#atomicNumber;
     }
 
-    getAtomicRadius() {
+    getRadius() {
         const minRadius = 0;
         const maxRadius = 3.3;
         const epsilon = 0.00001;
-        return ((this.#atomicRadius - minRadius) / (maxRadius - minRadius)) + epsilon;
+        return ((this.#radius - minRadius) / (maxRadius - minRadius)) + epsilon;
     }
 
     getMass() {
-        return this.#atomicMass;
+        return this.#mass;
     }
 
     getColor() {
