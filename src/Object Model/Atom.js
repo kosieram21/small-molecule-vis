@@ -22,7 +22,7 @@ class Atom {
         this.#atomicMass = atomicMass;
         this.#atomicRadius = atomicRadius;
         this.#color = color;
-        this.#bonds = new Set();
+        this.#bonds = new Map();
     }
 
     getPosition() {
@@ -114,7 +114,25 @@ class Atom {
     }
 
     getBonds() {
-        return this.#bonds;
+        return this.#bonds.values();
+    }
+
+    addBond(bond) {
+        const otherAtom = bond.getOtherAtom(this);
+        if (!this.#bonds.has(otherAtom)) {
+            this.#bonds.set(otherAtom, bond);
+        }
+    }
+
+    removeBond(bond) {
+        const otherAtom = bond.getOtherAtom(this);
+        if (this.#bonds.has(otherAtom)) {
+            this.#bonds.delete(otherAtom);
+        }
+    }
+
+    bondedWith(otherAtom) {
+        return this.#bonds.has(otherAtom);
     }
 }
 

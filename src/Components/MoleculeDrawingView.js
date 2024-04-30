@@ -371,87 +371,99 @@ function MoleculeDrawingView({ solution }) {
         };
 
         const cycleBondType = async (selectedBond) => {
-            return BondTable.load().then(bondTable => {
-                try {
-                    const bondType = selectedBond.getType();
-                    const element1 = selectedBond.getAtom1().getSymbol();
-                    const element2 = selectedBond.getAtom2().getSymbol();
-                    let bondInfo;
+            try {
+                const bondTable = await BondTable.load();
+                const bondType = selectedBond.getType();
+                const element1 = selectedBond.getAtom1().getSymbol();
+                const element2 = selectedBond.getAtom2().getSymbol();
+                let bondInfo;
                 
-                    switch(bondType) {
-                        case 'Single':
-                            bondInfo = bondTable.getBondInformation(element1, element2, 'Double');
-                            if (bondInfo) {
-                                selectedBond.update(bondInfo);
-                            }
-                            break;
-                        case 'Double':
-                            bondInfo = bondTable.getBondInformation(element1, element2, 'Triple');
-                            if (bondInfo) {
-                                selectedBond.update(bondInfo);
-                            } else {
-                                bondInfo = bondTable.getBondInformation(element1, element2, 'Single');
-                                selectedBond.update(bondInfo);
-                            }
-                            break;
-                        case 'Triple':
+                switch(bondType) {
+                    case 'Single':
+                        bondInfo = bondTable.getBondInformation(element1, element2, 'Double');
+                        if (bondInfo) {
+                            selectedBond.update(bondInfo);
+                        }
+                        break;
+                    case 'Double':
+                        bondInfo = bondTable.getBondInformation(element1, element2, 'Triple');
+                        if (bondInfo) {
+                            selectedBond.update(bondInfo);
+                        } else {
                             bondInfo = bondTable.getBondInformation(element1, element2, 'Single');
                             selectedBond.update(bondInfo);
-                    }
-                } catch(error) {
-                    addAlert(error.message, 'error');
+                        }
+                        break;
+                    case 'Triple':
+                        bondInfo = bondTable.getBondInformation(element1, element2, 'Single');
+                        selectedBond.update(bondInfo);
                 }
-            });
+            } catch(error) {
+                addAlert(error.message, 'error');
+            }
         };
 
         const checkBondCoherence = async () => {
-            return BondTable.load().then(bondTable => {
-                if (selectedAtom && hoveredAtom && selectedAtom != hoveredAtom) {
-                    const bondType = selectedBondRef.current;
-                    if (bondType) {
-                        try {
-                            const element1 = selectedAtom.getSymbol();
-                            const element2 = hoveredAtom.getSymbol();
-                            const bondInfo = bondTable.getBondInformation(element1, element2, bondType);
-                            if (bondInfo) {
-                                solution.addBond(new Bond(selectedAtom, hoveredAtom,
-                                    bondInfo.getBondLength(), bondInfo.getBondEnergy(),
-                                    bondInfo.getBondType()));
-                            } else {
-                                const message = `${element1}-${element2} is an invalid ${bondType.toLowerCase()} bond!`;
-                                addAlert(message, 'warning');
-                            }
-                        } catch(error) {
-                            addAlert(error.message, 'error');
-                        }
-                    } else {
-                        const message = 'Please select a bond type!';
-                        addAlert(message, 'info');
-                    }
+            try {
+                if (!selectedAtom || !hoveredAtom || selectedAtom === hoveredAtom) {
+                    return;
                 }
-            });
+        
+                const bondType = selectedBondRef.current;
+                if (!bondType) {
+                    addAlert('Please select a bond type!', 'info');
+                    return;
+                }
+        
+                const bondTable = await BondTable.load();
+                const element1 = selectedAtom.getSymbol();
+                const element2 = hoveredAtom.getSymbol();
+                const bondInfo = bondTable.getBondInformation(element1, element2, bondType);
+        
+                if (!bondInfo) {
+                    addAlert(`${element1}-${element2} is an invalid ${bondType.toLowerCase()} bond!`, 'warning');
+                    return;
+                }
+        
+                if (selectedAtom.bondedWith(hoveredAtom)) {
+                    addAlert(`Bond already exists between ${element1} and ${element2}!`, 'warning');
+                    return;
+                }
+        
+                solution.addBond(new Bond(selectedAtom, hoveredAtom, 
+                    bondInfo.getBondLength(), 
+                    bondInfo.getBondEnergy(), 
+                    bondInfo.getBondType()));
+            } catch (error) {
+                addAlert(error.message, 'error');
+            }
         };
     
-        const onClick = (event) => {
+        const onClick = async (event) => {
             if (!deleteEnabledRef.current && !moveEnabledRef.current && !anchorEnabledRef.current) {
-                PeriodicTable.load().then(periodicTable => {
-                    const selectedElement = selectedElementRef.current;
-                    if (selectedElement) {
-                        const rng = (min, max) => Math.random() * (max - min) + min;
-                        const solutionCoords = getSolutionCoordinates(event.clientX, event.clientY);
-                        const element = periodicTable.getElement(selectedElement);
-                        hoveredAtom = new Atom([solutionCoords.x, solutionCoords.y, rng(-0.01, 0.01)], 
-                            element.getSymbol(), 
-                            element.getAtomicNumber(),
-                            element.getAtomicMass(),
-                            element.getAtomicRadius(),
-                            element.getColor());
-                        solution.addAtom(hoveredAtom);
-                    } else {
-                        const message = 'Please select an element!';
-                        addAlert(message, 'info');
-                    }
-                });
+                const selectedElement = selectedElementRef.current;
+                if (!selectedElement) { 
+                    addAlert('Please select an element!', 'info');
+                    return;
+                }
+
+                try {
+                    const rng = (min, max) => Math.random() * (max - min) + min;
+                    const periodicTable = await PeriodicTable.load();
+                    const solutionCoords = getSolutionCoordinates(event.clientX, event.clientY);
+                    const element = periodicTable.getElement(selectedElement);
+        
+                    const hoveredAtom = new Atom([solutionCoords.x, solutionCoords.y, rng(-0.01, 0.01)],
+                        element.getSymbol(),
+                        element.getAtomicNumber(),
+                        element.getAtomicMass(),
+                        element.getAtomicRadius(),
+                        element.getColor()
+                    );
+                    solution.addAtom(hoveredAtom);
+                } catch (error) {
+                    addAlert(error.message, 'error');
+                }
             }
         };
 
