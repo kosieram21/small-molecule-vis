@@ -7,6 +7,8 @@ import BondTable from '../Object Model/BondTable';
 import Atom from '../Object Model/Atom.js';
 import Bond from '../Object Model/Bond.js';
 
+const two = new Two();
+
 function MoleculeDrawingView({ solution }) {
     const { 
         selectedElement, selectedBond, 
@@ -21,11 +23,7 @@ function MoleculeDrawingView({ solution }) {
     const colorEnabledRef = useRef(colorEnabled);
     const gridEnabledRef = useRef(gridEnabled);
 
-    const twoRef = useRef(new Two());
-
     useEffect(() => {
-        const two = twoRef.current;
-
         two.scene.translation.set(two.width / 2, two.height / 2);
 
         let panning = false;
@@ -589,8 +587,6 @@ function MoleculeDrawingView({ solution }) {
     }, [gridEnabled]);
 
     const onResize = (width, height) => {
-        const two = twoRef.current;
-
         const prevWidth = two.width || 1;
         const prevHeight = two.height || 1;
 
@@ -606,7 +602,7 @@ function MoleculeDrawingView({ solution }) {
         two.height = height;
     };
 
-    return <GraphicsContainer renderer={twoRef.current.renderer} onResize={onResize}/>;
+    return <GraphicsContainer renderer={two.renderer} onResize={onResize}/>;
 }
 
 export default MoleculeDrawingView;
