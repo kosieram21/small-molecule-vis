@@ -208,7 +208,7 @@ function MoleculeSimulationView({ solution }) {
     };
 
     const renderLonePair = (lonePair) => {
-      const bond = lonePair.getBonds().values().next().value;
+      const bond = lonePair.getBonds().next().value;
       if (bond) {
         const atom = bond.getOtherAtom(lonePair);
 
