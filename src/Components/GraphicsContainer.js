@@ -2,10 +2,11 @@ import React, { useRef, useEffect } from 'react';
 import './GraphicsContainer.css'
 
 function GraphicsContainer({ renderer, onResize }) {
-    const mountPoint = useRef();
+    const mountPointRef = useRef();
 
     useEffect(() => {
-        mountPoint.current.appendChild(renderer.domElement);
+        const mountPoint = mountPointRef.current;
+        mountPoint.appendChild(renderer.domElement);
 
         const debounce = (func, wait) => {
             let timeout;
@@ -24,15 +25,15 @@ function GraphicsContainer({ renderer, onResize }) {
             }
         }, 1));
 
-        resizeObserver.observe(mountPoint.current);
+        resizeObserver.observe(mountPoint);
     
         return () => {
-            mountPoint.current.removeChild(renderer.domElement);
+            mountPoint.removeChild(renderer.domElement);
             resizeObserver.disconnect();
         };
-      }, []);
+      }, [renderer, onResize]);
 
-    return <div ref={mountPoint} className='graphics-container'/>;
+    return <div ref={mountPointRef} className='graphics-container'/>;
 }
 
 export default GraphicsContainer;
