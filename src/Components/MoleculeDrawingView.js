@@ -48,7 +48,7 @@ function MoleculeDrawingView({ solution }) {
 
         const getCanvasRadius = (atomicRadius) => {
             const canvasRadius = 20 + 50 * atomicRadius;
-            return atomicRadius == 0 ? 0 : canvasRadius;
+            return atomicRadius === 0 ? 0 : canvasRadius;
         };
 
         const getCanvasFontSize = (atomicRadius) => {
@@ -60,7 +60,7 @@ function MoleculeDrawingView({ solution }) {
             if (colorEnabledRef.current) {
                 if (atom.getSymbol() === 'C' || atom.getSymbol() === '..') {
                     return 'black';
-                } else if (atom.getSymbol() == 'H') {
+                } else if (atom.getSymbol() === 'H') {
                     return 'gray';
                 } else {
                     return atom.getColor();
@@ -217,7 +217,7 @@ function MoleculeDrawingView({ solution }) {
 
         const renderCurrentBond = () => {
             if (!deleteEnabledRef.current && !moveEnabledRef.current && !anchorEnabledRef.current && 
-                selectedAtom && selectedAtom != hoveredAtom) {
+                selectedAtom && selectedAtom !== hoveredAtom) {
                 const bondType = selectedBondRef.current;
                 const clientCoords = getSolutionCoordinates(prevX, prevY);
                 if (bondType) {
@@ -397,6 +397,8 @@ function MoleculeDrawingView({ solution }) {
                     case 'Triple':
                         bondInfo = bondTable.getBondInformation(element1, element2, 'Single');
                         selectedBond.update(bondInfo);
+                    default:
+                        addAlert(`${bondType} is not a supported bond type!`, 'error');
                 }
             } catch(error) {
                 addAlert(error.message, 'error');
@@ -504,7 +506,7 @@ function MoleculeDrawingView({ solution }) {
 
         const onMouseUp = async (event) => {
             if (!deleteEnabledRef.current && !moveEnabledRef.current && !anchorEnabledRef.current &&
-                selectedAtom && hoveredAtom && selectedAtom != hoveredAtom) {
+                selectedAtom && hoveredAtom && selectedAtom !== hoveredAtom) {
                 await checkBondCoherence();
             } else if (draggedAtom) {
                 draggedAtom.setAnchor(false);
@@ -568,7 +570,7 @@ function MoleculeDrawingView({ solution }) {
 
             window.removeEventListener('mouseup', onMouseUp);
         };
-    }, [solution]);
+    }, [solution, addAlert]);
 
     useEffect(() => {
         selectedElementRef.current = selectedElement;

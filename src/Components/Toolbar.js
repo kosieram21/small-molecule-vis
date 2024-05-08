@@ -119,7 +119,8 @@ function Toolbar({ solution }) {
     return () => {
       window.removeEventListener('keydown', onKeyDown);
     };
-  }, [deleteEnabled, moveEnabled, anchorEnabled, colorEnabled]);
+  }, [deleteEnabled, moveEnabled, anchorEnabled, colorEnabled,
+      deleteButtonOnClick, moveButtonOnClick, anchorButtonOnClick, colorButtonOnClick]);
 
   return (
     <div className='toolbar'>

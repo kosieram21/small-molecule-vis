@@ -239,7 +239,7 @@ function MoleculeSimulationView({ solution }) {
 
     const renderMolecules = () => {
       solution.getAtoms().forEach(atom => {
-        if (atom.getSymbol() == '..') {
+        if (atom.getSymbol() === '..') {
           renderLonePair(atom);
         } else {
           renderAtom(atom);
