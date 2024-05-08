@@ -397,8 +397,10 @@ function MoleculeDrawingView({ solution }) {
                     case 'Triple':
                         bondInfo = bondTable.getBondInformation(element1, element2, 'Single');
                         selectedBond.update(bondInfo);
+                        break;
                     default:
                         addAlert(`${bondType} is not a supported bond type!`, 'error');
+                        break;
                 }
             } catch(error) {
                 addAlert(error.message, 'error');
