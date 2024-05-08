@@ -6,32 +6,34 @@ import './AlertContainer.css'
 
 function AlertContainer() {
       const { alerts, removeAlert } = useAppContext();
-      const alertTimers = useRef({});
+      const alertTimersRef = useRef({});
       
       const maxAlerts = 4;
       const alertDuration = 10000;
 
       useEffect(() => {
+            const alertTimers = alertTimersRef.current;
+
             if (alerts.length > maxAlerts) {
                   const extraAlerts = alerts.length - maxAlerts;
                   alerts.slice(0, extraAlerts).forEach(alert => removeAlert(alert.id));
             }
 
             alerts.forEach(alert => {
-                  if (!alertTimers.current[alert.id]) {
-                        alertTimers.current[alert.id] = setTimeout(() => {
+                  if (!alertTimers[alert.id]) {
+                        alertTimers[alert.id] = setTimeout(() => {
                               removeAlert(alert.id);
-                              delete alertTimers.current[alert.id];
+                              delete alertTimers[alert.id];
                         }, alertDuration);
                   }
             });
 
             return () => {
                   const currentAlertIds = new Set(alerts.map(alert => alert.id));
-                  Object.keys(alertTimers.current).forEach(timerKey => {
+                  Object.keys(alertTimers).forEach(timerKey => {
                         if (!currentAlertIds.has(parseInt(timerKey, 10))) {
-                              clearTimeout(alertTimers.current[timerKey]);
-                              delete alertTimers.current[timerKey];
+                              clearTimeout(alertTimers[timerKey]);
+                              delete alertTimers[timerKey];
                         }
                   });
             }
