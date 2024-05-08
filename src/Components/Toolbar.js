@@ -50,23 +50,23 @@ function Toolbar({ solution }) {
     setDeleteEnabled(!deleteEnabled);
     setMoveEnabled(false);
     setAnchorEnabled(false);
-  }, [deleteEnabled]);
+  }, [deleteEnabled, setDeleteEnabled, setMoveEnabled, setAnchorEnabled]);
 
   const moveButtonOnClick = useCallback(() => {
     setDeleteEnabled(false);
     setMoveEnabled(!moveEnabled);
     setAnchorEnabled(false);
-  }, [moveEnabled]);
+  }, [moveEnabled, setDeleteEnabled, setMoveEnabled, setAnchorEnabled]);
 
   const anchorButtonOnClick = useCallback(() => {
     setDeleteEnabled(false);
     setMoveEnabled(false);
     setAnchorEnabled(!anchorEnabled);
-  }, [anchorEnabled]);
+  }, [anchorEnabled, setDeleteEnabled, setMoveEnabled, setAnchorEnabled]);
 
   const colorButtonOnClick = useCallback(() => {
     setColorEnabled(!colorEnabled);
-  }, [colorEnabled]);
+  }, [colorEnabled, setColorEnabled]);
 
   useEffect(() => {
     PeriodicTable.load().then(periodicTable => {
