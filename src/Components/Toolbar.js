@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import './Toolbar.css';
 import TextField from '@mui/material/TextField';
 import Autocomplete from '@mui/material/Autocomplete';
@@ -46,27 +46,27 @@ function Toolbar({ solution }) {
     solution.clear();
   };
 
-  const deleteButtonOnClick = () => {
+  const deleteButtonOnClick = useCallback(() => {
     setDeleteEnabled(!deleteEnabled);
     setMoveEnabled(false);
     setAnchorEnabled(false);
-  };
+  }, [deleteEnabled]);
 
-  const moveButtonOnClick = () => {
+  const moveButtonOnClick = useCallback(() => {
     setDeleteEnabled(false);
     setMoveEnabled(!moveEnabled);
     setAnchorEnabled(false);
-  };
+  }, [moveEnabled]);
 
-  const anchorButtonOnClick = () => {
+  const anchorButtonOnClick = useCallback(() => {
     setDeleteEnabled(false);
     setMoveEnabled(false);
     setAnchorEnabled(!anchorEnabled);
-  };
+  }, [anchorEnabled]);
 
-  const colorButtonOnClick = () => {
+  const colorButtonOnClick = useCallback(() => {
     setColorEnabled(!colorEnabled);
-  };
+  }, [colorEnabled]);
 
   useEffect(() => {
     PeriodicTable.load().then(periodicTable => {
