@@ -7,7 +7,7 @@ import GraphicsContainer from './GraphicsContainer';
 const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: "high-performance" });
 
 function MoleculeSimulationView({ solution }) {
-  const { simulationEnabled } = useAppContext();
+  const { simulationEnabled, addAlert } = useAppContext();
   const simulationEnabledRef = useRef(simulationEnabled);
 
   useEffect(() => {
@@ -252,16 +252,20 @@ function MoleculeSimulationView({ solution }) {
     const animate = () => {
       animationFrameId = requestAnimationFrame(animate);
 
-      clearScene();
-      setupLights();
+      try {
+        clearScene();
+        setupLights();
 
-      if (simulationEnabledRef.current) {
-        solution.simulationStep();
-      }
-      renderMolecules();
+        if (simulationEnabledRef.current) {
+          solution.simulationStep();
+        }
+        renderMolecules();
       
-      controls.update();
-      renderer.render(scene, camera);
+        controls.update();
+        renderer.render(scene, camera);
+      } catch (error) {
+        addAlert(error.message, 'error');
+      }
     };
 
     animate();
@@ -279,7 +283,7 @@ function MoleculeSimulationView({ solution }) {
       renderer.domElement.removeEventListener('contextmenu', onContextMenu);
       controls.dispose();
     };
-  }, [solution]);
+  }, [solution, addAlert]);
 
   useEffect(() => {
     simulationEnabledRef.current = simulationEnabled;
