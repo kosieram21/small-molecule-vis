@@ -8,6 +8,7 @@ import Atom from '../Object Model/Atom.js';
 import Bond from '../Object Model/Bond.js';
 
 const two = new Two();
+two.scene.translation.set(two.width / 2, two.height / 2);
 
 function MoleculeDrawingView({ solution }) {
     const { 
@@ -24,8 +25,6 @@ function MoleculeDrawingView({ solution }) {
     const gridEnabledRef = useRef(gridEnabled);
 
     useEffect(() => {
-        two.scene.translation.set(two.width / 2, two.height / 2);
-
         let panning = false;
         let prevX, prevY;
         let selectedAtom, hoveredAtom, draggedAtom;
