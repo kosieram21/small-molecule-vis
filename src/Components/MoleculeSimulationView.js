@@ -5,25 +5,27 @@ import { ArcballControls } from 'three/examples/jsm/controls/ArcballControls.js'
 import GraphicsContainer from './GraphicsContainer';
 
 const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: "high-performance" });
+const camera = new THREE.PerspectiveCamera(75, 1, 0.1, 1000);
+const scene = new THREE.Scene();
+const controls = new ArcballControls(camera, renderer.domElement);
+
+camera.position.set(0, 0, 5);
+
+renderer.setPixelRatio(window.devicePixelRatio);
+//renderer.setClearColor(0xffffff);
+
+controls.minDistance = 1;
+controls.maxDistance = 100;
+controls.enableDamping = true;
+controls.dampingFactor = 0.05;
+
+controls.update();
 
 function MoleculeSimulationView({ solution }) {
   const { simulationEnabled, addAlert } = useAppContext();
   const simulationEnabledRef = useRef(simulationEnabled);
 
   useEffect(() => {
-    const scene = new THREE.Scene();
-    const camera = new THREE.PerspectiveCamera(75, 1, 0.1, 1000);
-    const controls = new ArcballControls(camera, renderer.domElement)
-
-    //renderer.setClearColor(0xffffff);
-    renderer.setPixelRatio(window.devicePixelRatio);
-
-    controls.minDistance = 1;
-    controls.maxDistance = 100;
-    controls.enableDamping = true;
-    controls.dampingFactor = 0.05;
-
-    camera.position.set(0, 0, 5);
     controls.update();
 
     const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
@@ -281,7 +283,7 @@ function MoleculeSimulationView({ solution }) {
       clearScene();
 
       renderer.domElement.removeEventListener('contextmenu', onContextMenu);
-      controls.dispose();
+      //controls.dispose();
     };
   }, [solution, addAlert]);
 
