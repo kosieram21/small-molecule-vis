@@ -21,17 +21,17 @@ controls.dampingFactor = 0.05;
 
 controls.update();
 
+const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+const directionalLight = new THREE.DirectionalLight(0xffffff, 2);
+directionalLight.position.set(-5, 0, 5);
+camera.add(directionalLight);
+
 function MoleculeSimulationView({ solution }) {
   const { simulationEnabled, addAlert } = useAppContext();
   const simulationEnabledRef = useRef(simulationEnabled);
 
   useEffect(() => {
     controls.update();
-
-    const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
-    const directionalLight = new THREE.DirectionalLight(0xffffff, 2);
-    directionalLight.position.set(-5, 0, 5);
-    camera.add(directionalLight);
 
     const getSceneCoordinates = (solutionX, solutionY, solutionZ) => {
       const scale = 7.5;
