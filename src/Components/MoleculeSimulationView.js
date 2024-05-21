@@ -4,267 +4,246 @@ import * as THREE from 'three';
 import { ArcballControls } from 'three/examples/jsm/controls/ArcballControls.js';
 import GraphicsContainer from './GraphicsContainer';
 
-const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: "high-performance" });
-const camera = new THREE.PerspectiveCamera(75, 1, 0.1, 1000);
-const scene = new THREE.Scene();
-const controls = new ArcballControls(camera, renderer.domElement);
+class ThreeDimensionalSolutionRenderer {
+  #renderer;
+  #camera;
+  #scene;
+  #controls;
 
-camera.position.set(0, 0, 5);
+  #ambientLight;
+  #directionalLight;
 
-renderer.setPixelRatio(window.devicePixelRatio);
-//renderer.setClearColor(0xffffff);
+  domElement;
 
-controls.minDistance = 1;
-controls.maxDistance = 100;
-controls.enableDamping = true;
-controls.dampingFactor = 0.05;
+  constructor() {
+    this.#renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: "high-performance" });
+    this.#renderer.setPixelRatio(window.devicePixelRatio);
+    this.#renderer.domElement.addEventListener('contextmenu', this.#onContextMenu);
+    this.domElement = this.#renderer.domElement;
 
-controls.update();
+    this.#camera = new THREE.PerspectiveCamera(75, 1, 0.1, 1000);
+    this.#camera.position.set(0, 0, 5);
 
-const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
-const directionalLight = new THREE.DirectionalLight(0xffffff, 2);
-directionalLight.position.set(-5, 0, 5);
-camera.add(directionalLight);
+    this.#scene = new THREE.Scene();
+
+    this.#controls = new ArcballControls(this.#camera, this.#renderer.domElement);
+    this.#controls.minDistance = 1;
+    this.#controls.maxDistance = 100;
+    this.#controls.enableDamping = true;
+    this.#controls.dampingFactor = 0.05;
+    this.#controls.update();
+
+    this.#ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+
+    this.#directionalLight = new THREE.DirectionalLight(0xffffff, 2);
+    this.#directionalLight.position.set(-5, 0, 5);
+    this.#camera.add(this.#directionalLight);
+  }
+
+  dispose() {
+    this.#clearScene();
+    this.#renderer.domElement.removeEventListener('contextmenu', this.#onContextMenu);
+    this.#renderer.dispose();
+    this.#controls.dispose();
+  }
+
+  setSize(width, height) {
+    this.#renderer.setSize(width, height);
+  }
+
+  #getSceneCoordinates(solutionX, solutionY, solutionZ) {
+    const scale = 7.5;
+    const sceneX = solutionX * scale;
+    const sceneY = -solutionY * scale;
+    const sceneZ = solutionZ * scale;
+    return new THREE.Vector3(sceneX, sceneY, sceneZ);
+  };
+
+  #getSceneRadius(atomicRadius) {
+    const sceneRadius = 0.2 + 0.4 * atomicRadius;
+    return sceneRadius;
+  };
+
+  #clearScene() {
+    while(this.#scene.children.length > 0){ 
+      const child = this.#scene.children[0];
+      
+      if (child.isMesh) {
+        if (child.geometry) {
+          child.geometry.dispose();
+        }
+        
+        if (child.material) {
+          child.material.dispose();
+        }
+      }
+      
+      this.#scene.remove(child); 
+    }
+  }
+
+  #setupLights() {
+    this.#scene.add(this.#ambientLight);
+    this.#scene.add(this.#camera);
+  }
+
+  #renderCylinder(start, end, offset = 0) {
+    const direction = new THREE.Vector3().subVectors(end, start);
+    const offsetDirection= new THREE.Vector3(-direction.y, direction.x, direction.z).normalize().multiplyScalar(offset);
+    const length = direction.length();
+
+    const a = new THREE.Vector3().addVectors(start, offsetDirection);
+    const b = new THREE.Vector3().addVectors(end, offsetDirection);
+
+    const orientation = new THREE.Matrix4();
+    orientation.lookAt(start, end, new THREE.Object3D().up);
+    orientation.multiply(new THREE.Matrix4().makeRotationX(Math.PI / 2));
+    orientation.setPosition(new THREE.Vector3().addVectors(a, b).multiplyScalar(0.5));
+
+    const radius = 0.03;
+    const geometry = new THREE.CylinderGeometry(radius, radius, length, 32);
+    const material = new THREE.MeshPhongMaterial({ color: 'white', shininess: 50 });
+
+    const cylinder = new THREE.Mesh(geometry, material);
+    cylinder.applyMatrix4(orientation);
+    this.#scene.add(cylinder);
+  }
+
+  #renderSingleBond(start, end) {
+    this.#renderCylinder(start, end);
+  };
+
+  #renderDoubleBond(start, end) {
+    this.#renderCylinder(start, end, 0.1);
+    this.#renderCylinder(start, end, -0.1);
+  };
+
+  #renderTripleBond(start, end) {
+    this.#renderCylinder(start, end, 0.1);
+    this.#renderCylinder(start, end);
+    this.#renderCylinder(start, end, -0.1);
+  };
+
+  #renderBond(bond) {
+    const bondType = bond.getType();
+    const [startX, startY, startZ] = bond.getAtom1().getPosition();
+    const [endX, endY, endZ] = bond.getAtom2().getPosition();
+
+    const start = this.#getSceneCoordinates(startX, startY, startZ);
+    const end = this.#getSceneCoordinates(endX, endY, endZ);
+
+    switch(bondType) {
+      case 'Single':
+        this.#renderSingleBond(start, end);
+        break;
+      case 'Double':
+        this.#renderDoubleBond(start, end);
+        break;
+      case 'Triple':
+        this.#renderTripleBond(start, end);
+        break;
+      default:
+        break;
+    }
+  };
+
+  #renderSphere(position, radius, color) {
+    const geometry = new THREE.SphereGeometry(radius, 32, 32);
+    const material = new THREE.MeshPhongMaterial({ color: color, shininess: 50 });
+
+    const sphere = new THREE.Mesh(geometry, material);
+    sphere.position.copy(position);
+    this.#scene.add(sphere);
+  }
+
+  #renderAtom(atom) {
+    const [x, y, z] = atom.getPosition();
+    const color = atom.getColor();
+    const atomicRadius = atom.getRadius();
+
+    const position = this.#getSceneCoordinates(x, y, z);
+    const sceneRadius = this.#getSceneRadius(atomicRadius);
+
+    this.#renderSphere(position, sceneRadius, color);
+  };
+
+  #renderLonePair(lonePair) {
+    const bond = lonePair.getBonds().next().value;
+    if (bond) {
+      const atom = bond.getOtherAtom(lonePair);
+
+      const [startX, startY, startZ] = atom.getPosition();
+      const [x, y, z] = lonePair.getPosition();
+
+      const start = this.#getSceneCoordinates(startX, startY, startZ);
+      const end = this.#getSceneCoordinates(x, y, z);
+
+      const direction = new THREE.Vector3().subVectors(end, start).normalize().multiplyScalar(0.1);
+      const offset= new THREE.Vector3(-direction.y, direction.x, direction.z);
+
+      const position1 = end.clone().add(offset).add(direction);
+      this.#renderSphere(position1, 0.05, 'white');
+
+      const position2 = end.clone().sub(offset).add(direction);
+      this.#renderSphere(position2, 0.05, 'white');
+    }
+  }
+
+  #renderMolecules(solution) {
+    solution.getAtoms().forEach(atom => {
+      if (atom.getSymbol() === '..') {
+        this.#renderLonePair(atom);
+      } else {
+        this.#renderAtom(atom);
+      }
+    });
+    solution.getBonds().forEach(bond => this.#renderBond(bond));
+  }
+
+  renderSolution(solution) {
+    this.#clearScene();
+    this.#setupLights();
+    this.#renderMolecules(solution);
+    this.#controls.update();
+    this.#renderer.render(this.#scene, this.#camera);
+  }
+
+  #onContextMenu(event) {
+    event.preventDefault();
+  };
+}
 
 function MoleculeSimulationView({ solution }) {
   const { simulationEnabled, addAlert } = useAppContext();
   const simulationEnabledRef = useRef(simulationEnabled);
 
+  const rendererRef = useRef(null);
+
   useEffect(() => {
-    controls.update();
-
-    const getSceneCoordinates = (solutionX, solutionY, solutionZ) => {
-      const scale = 7.5;
-      const sceneX = solutionX * scale;
-      const sceneY = -solutionY * scale;
-      const sceneZ = solutionZ * scale;
-      return [sceneX, sceneY, sceneZ];
-    };
-
-    const getSceneRadius = (atomicRadius) => {
-      const sceneRadius = 0.2 + 0.4 * atomicRadius;
-      return sceneRadius;
-    };
-
-    const getSceneCylinderRadius = () => {
-      return 0.03;
-    };
-
-    const clearScene = () => {
-      while(scene.children.length > 0){ 
-        const child = scene.children[0];
-        
-        if (child.isMesh) {
-          if (child.geometry) {
-            child.geometry.dispose();
-          }
-          
-          if (child.material) {
-            child.material.dispose();
-          }
-        }
-        
-        scene.remove(child); 
-      }
-    };
-
-    const setupLights = () => {
-      scene.add(ambientLight);
-      scene.add(camera);
-    };
-
-    const renderSingleBond = (startX, startY, startZ, endX, endY, endZ) => {
-      const [sceneStartX, sceneStartY, sceneStartZ] = getSceneCoordinates(startX, startY, startZ);
-      const [sceneEndX, sceneEndY, sceneEndZ] = getSceneCoordinates(endX, endY, endZ);
-      const sceneCylinderRadius = getSceneCylinderRadius();
-
-      const start = new THREE.Vector3(sceneStartX, sceneStartY, sceneStartZ);
-      const end = new THREE.Vector3(sceneEndX, sceneEndY, sceneEndZ);
-      
-      const direction = new THREE.Vector3().subVectors(end, start);
-      const length = direction.length();
-
-      const orientation = new THREE.Matrix4();
-      orientation.lookAt(start, end, new THREE.Object3D().up);
-      orientation.setPosition(new THREE.Vector3().addVectors(start, end).multiplyScalar(0.5));
-      orientation.multiply(new THREE.Matrix4().makeRotationX(Math.PI / 2));
-
-      const geometry = new THREE.CylinderGeometry(sceneCylinderRadius, sceneCylinderRadius, length, 32);
-      const material = new THREE.MeshPhongMaterial({ color: 'white', shininess: 50 });
-
-      const cylinder = new THREE.Mesh(geometry, material);
-      cylinder.applyMatrix4(orientation);
-      scene.add(cylinder);
-    };
-
-    const renderDoubleBond = (startX, startY, startZ, endX, endY, endZ) => {
-      const [sceneStartX, sceneStartY, sceneStartZ] = getSceneCoordinates(startX, startY, startZ);
-      const [sceneEndX, sceneEndY, sceneEndZ] = getSceneCoordinates(endX, endY, endZ);
-      const sceneCylinderRadius = getSceneCylinderRadius();
-
-      const start = new THREE.Vector3(sceneStartX, sceneStartY, sceneStartZ);
-      const end = new THREE.Vector3(sceneEndX, sceneEndY, sceneEndZ);
-      
-      const direction = new THREE.Vector3().subVectors(end, start);
-      const offset= new THREE.Vector3(-direction.y, direction.x, direction.z).normalize().multiplyScalar(0.1);
-      const length = direction.length();
-
-      const a1 = new THREE.Vector3().addVectors(start, offset);
-      const b1 = new THREE.Vector3().addVectors(end, offset);
-
-      const a2 = new THREE.Vector3().subVectors(start, offset);
-      const b2 = new THREE.Vector3().subVectors(end, offset);
-
-      const orientation = new THREE.Matrix4();
-      orientation.lookAt(start, end, new THREE.Object3D().up);
-      orientation.multiply(new THREE.Matrix4().makeRotationX(Math.PI / 2));
-
-      const geometry = new THREE.CylinderGeometry(sceneCylinderRadius, sceneCylinderRadius, length, 32);
-      const material = new THREE.MeshPhongMaterial({ color: 'white', shininess: 50 });
-
-      orientation.setPosition(new THREE.Vector3().addVectors(a1, b1).multiplyScalar(0.5));
-      const cylinder1 = new THREE.Mesh(geometry, material);
-      cylinder1.applyMatrix4(orientation);
-      scene.add(cylinder1);
-
-      orientation.setPosition(new THREE.Vector3().addVectors(a2, b2).multiplyScalar(0.5));
-      const cylinder2 = new THREE.Mesh(geometry, material);
-      cylinder2.applyMatrix4(orientation);
-      scene.add(cylinder2);
-    };
-
-    const renderTripleBond = (startX, startY, startZ, endX, endY, endZ) => {
-      const [sceneStartX, sceneStartY, sceneStartZ] = getSceneCoordinates(startX, startY, startZ);
-      const [sceneEndX, sceneEndY, sceneEndZ] = getSceneCoordinates(endX, endY, endZ);
-      const sceneCylinderRadius = getSceneCylinderRadius();
-
-      const start = new THREE.Vector3(sceneStartX, sceneStartY, sceneStartZ);
-      const end = new THREE.Vector3(sceneEndX, sceneEndY, sceneEndZ);
-      
-      const direction = new THREE.Vector3().subVectors(end, start);
-      const offset= new THREE.Vector3(-direction.y, direction.x, direction.z).normalize().multiplyScalar(0.1);
-      const length = direction.length();
-
-      const a1 = new THREE.Vector3().addVectors(start, offset);
-      const b1 = new THREE.Vector3().addVectors(end, offset);
-
-      const a2 = new THREE.Vector3().subVectors(start, offset);
-      const b2 = new THREE.Vector3().subVectors(end, offset);
-
-      const orientation = new THREE.Matrix4();
-      orientation.lookAt(start, end, new THREE.Object3D().up);
-      orientation.setPosition(new THREE.Vector3().addVectors(start, end).multiplyScalar(0.5));
-      orientation.multiply(new THREE.Matrix4().makeRotationX(Math.PI / 2));
-
-      const geometry = new THREE.CylinderGeometry(sceneCylinderRadius, sceneCylinderRadius, length, 32);
-      const material = new THREE.MeshPhongMaterial({ color: 'white', shininess: 50 });
-
-      const cylinder = new THREE.Mesh(geometry, material);
-      cylinder.applyMatrix4(orientation);
-      scene.add(cylinder);
-
-      orientation.setPosition(new THREE.Vector3().addVectors(a1, b1).multiplyScalar(0.5));
-      const cylinder1 = new THREE.Mesh(geometry, material);
-      cylinder1.applyMatrix4(orientation);
-      scene.add(cylinder1);
-
-      orientation.setPosition(new THREE.Vector3().addVectors(a2, b2).multiplyScalar(0.5));
-      const cylinder2 = new THREE.Mesh(geometry, material);
-      cylinder2.applyMatrix4(orientation);
-      scene.add(cylinder2);
-    };
-
-    const renderBond = (bond) => {
-      const bondType = bond.getType();
-      const [startX, startY, startZ] = bond.getAtom1().getPosition();
-      const [endX, endY, endZ] = bond.getAtom2().getPosition();
-        switch(bondType) {
-          case 'Single':
-            renderSingleBond(startX, startY, startZ, endX, endY, endZ);
-            break;
-          case 'Double':
-            renderDoubleBond(startX, startY, startZ, endX, endY, endZ);
-            break;
-          case 'Triple':
-            renderTripleBond(startX, startY, startZ, endX, endY, endZ);
-            break;
-          default:
-            break;
-      }
-    };
-
-    const renderAtom = (atom) => {
-      const [x, y, z] = atom.getPosition();
-      const color = atom.getColor();
-      const atomicRadius = atom.getRadius();
-
-      const [sceneX, sceneY, sceneZ] = getSceneCoordinates(x, y, z);
-      const sceneRadius = getSceneRadius(atomicRadius);
-
-      const geometry = new THREE.SphereGeometry(sceneRadius, 32, 32);
-      const material = new THREE.MeshPhongMaterial({ color: color, shininess: 50 });
-
-      const sphere = new THREE.Mesh(geometry, material);
-      sphere.position.set(sceneX, sceneY, sceneZ);
-      scene.add(sphere);
-    };
-
-    const renderLonePair = (lonePair) => {
-      const bond = lonePair.getBonds().next().value;
-      if (bond) {
-        const atom = bond.getOtherAtom(lonePair);
-
-        const [startX, startY, startZ] = atom.getPosition();
-        const [x, y, z] = lonePair.getPosition();
-
-        const [sceneStartX, sceneStartY, sceneStartZ] = getSceneCoordinates(startX, startY, startZ);
-        const [sceneX, sceneY, sceneZ] = getSceneCoordinates(x, y, z);
-
-        const start = new THREE.Vector3(sceneStartX, sceneStartY, sceneStartZ);
-        const end = new THREE.Vector3(sceneX, sceneY, sceneZ);
-
-        const direction = new THREE.Vector3().subVectors(end, start).normalize().multiplyScalar(0.1);
-        const offset= new THREE.Vector3(-direction.y, direction.x, direction.z);
-
-        const geometry = new THREE.SphereGeometry(0.05, 32, 32);
-        const material = new THREE.MeshPhongMaterial({ color: 'white', shininess: 50 });
-
-        const sphere1 = new THREE.Mesh(geometry, material);
-        sphere1.position.copy(end).add(offset).add(direction);
-        scene.add(sphere1);
-
-        const sphere2 = new THREE.Mesh(geometry, material);
-        sphere2.position.copy(end).sub(offset).add(direction);
-        scene.add(sphere2);
-      }
+    if (!rendererRef.current) {
+      rendererRef.current = new ThreeDimensionalSolutionRenderer();
     }
 
-    const renderMolecules = () => {
-      solution.getAtoms().forEach(atom => {
-        if (atom.getSymbol() === '..') {
-          renderLonePair(atom);
-        } else {
-          renderAtom(atom);
-        }
-      });
-      solution.getBonds().forEach(bond => renderBond(bond));
-    };
+    return () => {
+      if (rendererRef.current) {
+        rendererRef.current.dispose();
+        rendererRef.current = null;
+      }
+    }
+  }, []);
 
+  useEffect(() => {
     let animationFrameId;
     const animate = () => {
       animationFrameId = requestAnimationFrame(animate);
 
       try {
-        clearScene();
-        setupLights();
-
         if (simulationEnabledRef.current) {
           solution.simulationStep();
         }
-        renderMolecules();
-      
-        controls.update();
-        renderer.render(scene, camera);
+        if (rendererRef.current) {
+          rendererRef.current.renderSolution(solution);
+        }
       } catch (error) {
         addAlert(error.message, 'error');
       }
@@ -272,18 +251,8 @@ function MoleculeSimulationView({ solution }) {
 
     animate();
 
-    const onContextMenu = (event) => {
-      event.preventDefault();
-    };
-
-    renderer.domElement.addEventListener('contextmenu', onContextMenu);
-
     return () => {
       cancelAnimationFrame(animationFrameId);
-      clearScene();
-
-      renderer.domElement.removeEventListener('contextmenu', onContextMenu);
-      //controls.dispose();
     };
   }, [solution, addAlert]);
 
@@ -292,10 +261,12 @@ function MoleculeSimulationView({ solution }) {
   }, [simulationEnabled]);
 
   const onResize = (width, height) => {
-    renderer.setSize(width, height);
+    if (rendererRef.current) {
+      rendererRef.current.setSize(width, height);
+    }
   };
 
-  return <GraphicsContainer renderer={renderer} onResize={onResize}/>;
+  return <GraphicsContainer renderer={rendererRef.current} onResize={onResize}/>;
 }
 
 export default MoleculeSimulationView;

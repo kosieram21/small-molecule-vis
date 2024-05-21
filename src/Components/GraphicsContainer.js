@@ -5,8 +5,9 @@ function GraphicsContainer({ renderer, onResize }) {
     const mountPointRef = useRef();
 
     useEffect(() => {
-        const mountPoint = mountPointRef.current;
-        mountPoint.appendChild(renderer.domElement);
+        if (renderer) {
+            mountPointRef.current.appendChild(renderer.domElement);
+        }
 
         const debounce = (func, wait) => {
             let timeout;
@@ -25,10 +26,13 @@ function GraphicsContainer({ renderer, onResize }) {
             }
         }, 1));
 
-        resizeObserver.observe(mountPoint);
+        resizeObserver.observe(mountPointRef.current);
+        
     
         return () => {
-            mountPoint.removeChild(renderer.domElement);
+            if (renderer) {
+                mountPointRef.current.removeChild(renderer.domElement);
+            }
             resizeObserver.disconnect();
         };
       }, [renderer, onResize]);
