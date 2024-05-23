@@ -283,7 +283,7 @@ function MoleculeDrawingView({ solution }) {
                 hoveredAtom = checkAtomCollision(event.clientX, event.clientY);
                 hoveredBond = checkBondCollision(event.clientX, event.clientY);
 
-                if (panning && renderer) {
+                if (panning) {
                     const dx =  event.clientX - prevX;
                     const dy = event.clientY - prevY;
                     const delta = new Two.Vector(dx, dy);
