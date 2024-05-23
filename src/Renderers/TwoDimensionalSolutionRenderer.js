@@ -61,14 +61,17 @@ class TwoDimensionalSolutionRenderer {
         return new Two.Vector(canvasX, canvasY);
     }
 
-    getCanvasRadius(atomicRadius) {
+    getCanvasAtomRadius(atomicRadius) {
         const canvasRadius = 20 + 50 * atomicRadius;
         return atomicRadius === 0 ? 0 : canvasRadius;
     }
 
-    #getCanvasFontSize(atomicRadius) {
-        const fontSize = 30 + 60 * atomicRadius;
-        return fontSize;
+    getCanvasBondWidth(bondType) {
+        const scalar = 
+            bondType === 'Triple' ? 3 :
+            bondType === 'Double' ? 2 : 
+            bondType === 'Single' ? 1 : 0;
+        return 4 * scalar;
     }
 
     #getAtomColor(atom, colorEnabled) {
@@ -84,12 +87,12 @@ class TwoDimensionalSolutionRenderer {
         return 'black';
     }
 
-    getCanvasLineWidth() {
-        return 4;
-    }
-
     #getHighlightColor(isAnchored) {
         return isAnchored ? 'rgba(255, 173, 173, 0.5)' : 'rgba(173, 216, 230, 0.5)'
+    }
+
+    #renderLine(start, end, offset) {
+        
     }
 
     #renderGrid(gridEnabled) {
@@ -132,9 +135,9 @@ class TwoDimensionalSolutionRenderer {
         const canvasStart = this.getCanvasCoordinates(startX, startY);
         const canvasEnd = this.getCanvasCoordinates(endX, endY);
 
-        const canvasRadius1 = this.getCanvasRadius(radius1);
-        const canvasRadius2 = this.getCanvasRadius(radius2);
-        const canvasLineWidth = this.getCanvasLineWidth();
+        const canvasRadius1 = this.getCanvasAtomRadius(radius1);
+        const canvasRadius2 = this.getCanvasAtomRadius(radius2);
+        const canvasLineWidth = this.getCanvasBondWidth("Single");
 
         const direction = Two.Vector.sub(canvasStart, canvasEnd).normalize();
 
@@ -151,9 +154,9 @@ class TwoDimensionalSolutionRenderer {
         const canvasStart = this.getCanvasCoordinates(startX, startY);
         const canvasEnd = this.getCanvasCoordinates(endX, endY);
 
-        const canvasRadius1 = this.getCanvasRadius(radius1);
-        const canvasRadius2 = this.getCanvasRadius(radius2);
-        const canvasLineWidth = this.getCanvasLineWidth();
+        const canvasRadius1 = this.getCanvasAtomRadius(radius1);
+        const canvasRadius2 = this.getCanvasAtomRadius(radius2);
+        const canvasLineWidth = this.getCanvasBondWidth("Double")/ 2;
 
         const direction = Two.Vector.sub(canvasStart, canvasEnd).normalize();
         const offset= new Two.Vector(-direction.y, direction.x).multiplyScalar(canvasLineWidth * 2);
@@ -182,9 +185,9 @@ class TwoDimensionalSolutionRenderer {
         const canvasStart = this.getCanvasCoordinates(startX, startY);
         const canvasEnd = this.getCanvasCoordinates(endX, endY);
 
-        const canvasRadius1 = this.getCanvasRadius(radius1);
-        const canvasRadius2 = this.getCanvasRadius(radius2);
-        const canvasLineWidth = this.getCanvasLineWidth();
+        const canvasRadius1 = this.getCanvasAtomRadius(radius1);
+        const canvasRadius2 = this.getCanvasAtomRadius(radius2);
+        const canvasLineWidth = this.getCanvasBondWidth("Triple") / 3;
 
         const direction = Two.Vector.sub(canvasStart, canvasEnd).normalize();
         const offset= new Two.Vector(-direction.y, direction.x).multiplyScalar(canvasLineWidth * 2);
@@ -261,7 +264,7 @@ class TwoDimensionalSolutionRenderer {
         text.fill = this.#getAtomColor(atom, colorEnabled);
         text.alignment = 'center';
         text.baseline = 'middle';
-        text.size = this.#getCanvasFontSize(atomicRadius);
+        text.size = this.getCanvasAtomRadius(atomicRadius) * 1.25;
         this.#two.add(text);
     }
 
@@ -276,7 +279,7 @@ class TwoDimensionalSolutionRenderer {
             const distance = canvasStart.distanceTo(canvasEnd);
 
             const rx = (distance / 2) - 17;
-            const ry = this.getCanvasLineWidth() * 7;
+            const ry = this.getCanvasBondWidth("Single") * 7;
 
             const highlight = new Two.Ellipse(canvasMid.x, canvasMid.y, rx, ry);
             highlight.fill = this.#getHighlightColor();
@@ -292,7 +295,7 @@ class TwoDimensionalSolutionRenderer {
             const atomicRadius = atom.getRadius();
 
             const canvasCoords = this.getCanvasCoordinates(x, y);
-            const canvasRadius = this.getCanvasRadius(atomicRadius);
+            const canvasRadius = this.getCanvasAtomRadius(atomicRadius);
 
             const highlight = new Two.Circle(canvasCoords.x, canvasCoords.y, canvasRadius);
             highlight.fill = this.#getHighlightColor(atom.isAnchored());

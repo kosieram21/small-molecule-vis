@@ -24,7 +24,7 @@ function MoleculeDrawingView({ solution }) {
           rendererInstance.dispose();
           setRenderer(null);
         };
-      }, [setRenderer]);
+    }, [setRenderer]);
 
     useEffect(() => {
         if(renderer) {
@@ -77,7 +77,7 @@ function MoleculeDrawingView({ solution }) {
                     const atomicRadius = atom.getRadius();
         
                     const canvasAtomCoords = renderer.getCanvasCoordinates(x, y);
-                    const canvasRadius = renderer.getCanvasRadius(atomicRadius);
+                    const canvasRadius = renderer.getCanvasAtomRadius(atomicRadius);
         
                     const distance = canvasClientCoords.distanceTo(canvasAtomCoords);
         
@@ -115,10 +115,7 @@ function MoleculeDrawingView({ solution }) {
         
                     const canvasAtom1Coords = renderer.getCanvasCoordinates(x1, y1);
                     const canvasAtom2Coords = renderer.getCanvasCoordinates(x2, y2);
-                    const scalar = 
-                        bondType === 'Triple' ? 3 :
-                        bondType === 'Double' ? 2 : 1;
-                    const lineWidth = (renderer.getCanvasLineWidth() + 1) * scalar;
+                    const lineWidth = renderer.getCanvasBondWidth(bondType) + 1;
         
                     const distance = pointToSegmentDistance(canvasClientCoords, canvasAtom1Coords, canvasAtom2Coords);
 
