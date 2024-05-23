@@ -18,7 +18,7 @@ import BondTable from '../Object Model/BondTable'
 function Toolbar({ solution }) {
   const [elementOptions, setElementOptions] = useState([]);
   const [bondOptions, setBondOptions] = useState([]);
-  const { setSelectedElement, setSelectedBond, 
+  const { setSelectedElement, setSelectedBondType, 
     deleteEnabled, setDeleteEnabled, 
     moveEnabled, setMoveEnabled,
     anchorEnabled, setAnchorEnabled,
@@ -31,7 +31,7 @@ function Toolbar({ solution }) {
   };
 
   const bondTypeComboBoxOnChange = (event, selectedOption) => {
-    setSelectedBond(selectedOption ? selectedOption.value : selectedOption);
+    setSelectedBondType(selectedOption ? selectedOption.value : selectedOption);
   };
 
   const gridCheckBoxOnChange = (event) => {

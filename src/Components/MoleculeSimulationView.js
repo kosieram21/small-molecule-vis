@@ -1,4 +1,4 @@
-import React, { useRef, useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useAppContext } from '../AppContext';
 import ThreeDimensionalSolutionRenderer from '../Renderers/ThreeDimensionalSolutionRenderer';
 import GraphicsContainer from './GraphicsContainer';
@@ -6,7 +6,6 @@ import { ArcballControls } from 'three/examples/jsm/controls/ArcballControls.js'
 
 function MoleculeSimulationView({ solution }) {
   const { simulationEnabled, addAlert } = useAppContext();
-  const simulationEnabledRef = useRef(simulationEnabled);
   const [renderer, setRenderer] = useState(null);
   const [controls, setControls] = useState(null);
 
@@ -38,7 +37,7 @@ function MoleculeSimulationView({ solution }) {
         animationFrameId = requestAnimationFrame(animate);
 
         try {
-          if (simulationEnabledRef.current) {
+          if (simulationEnabled) {
             solution.simulationStep();
           }
           renderer.renderSolution(solution);
@@ -61,11 +60,7 @@ function MoleculeSimulationView({ solution }) {
         renderer.domElement.removeEventListener('contextmenu', onContextMenu);
       };
     }
-  }, [solution, addAlert, renderer, controls]);
-
-  useEffect(() => {
-    simulationEnabledRef.current = simulationEnabled;
-  }, [simulationEnabled]);
+  }, [solution, renderer, controls, simulationEnabled, addAlert]);
 
   return <GraphicsContainer renderer={renderer}/>;
 }

@@ -4,7 +4,7 @@ const AppContext = createContext();
 
 export const AppContextProvider = ({ children }) => {
     const [selectedElement, setSelectedElement] = useState("");
-    const [selectedBond, setSelectedBond] = useState("");
+    const [selectedBondType, setSelectedBondType] = useState("");
     const [deleteEnabled, setDeleteEnabled] = useState(false);
     const [moveEnabled, setMoveEnabled] = useState(false);
     const [anchorEnabled, setAnchorEnabled] = useState(false);
@@ -24,7 +24,7 @@ export const AppContextProvider = ({ children }) => {
     
     const value = { 
         selectedElement, setSelectedElement, 
-        selectedBond, setSelectedBond, 
+        selectedBondType, setSelectedBondType, 
         deleteEnabled, setDeleteEnabled,
         moveEnabled, setMoveEnabled,
         anchorEnabled, setAnchorEnabled,
