@@ -60,7 +60,10 @@ function MoleculeSimulationView({ solution }) {
         renderer.domElement.removeEventListener('contextmenu', onContextMenu);
       };
     }
-  }, [solution, renderer, controls, simulationEnabled, addAlert]);
+  }, [solution, 
+      renderer, controls, 
+      simulationEnabled, 
+      addAlert]);
 
   return <GraphicsContainer renderer={renderer}/>;
 }

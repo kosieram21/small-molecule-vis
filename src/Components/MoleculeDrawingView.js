@@ -133,31 +133,24 @@ function MoleculeDrawingView({ solution }) {
                     const bondType = selectedBond.getType();
                     const element1 = selectedBond.getAtom1().getSymbol();
                     const element2 = selectedBond.getAtom2().getSymbol();
-                    let bondInfo;
-                
-                    switch(bondType) {
-                        case 'Single':
-                            bondInfo = bondTable.getBondInformation(element1, element2, 'Double');
-                            if (bondInfo) {
-                                selectedBond.update(bondInfo);
-                            }
-                            break;
-                        case 'Double':
-                            bondInfo = bondTable.getBondInformation(element1, element2, 'Triple');
-                            if (bondInfo) {
-                                selectedBond.update(bondInfo);
-                            } else {
-                                bondInfo = bondTable.getBondInformation(element1, element2, 'Single');
-                                selectedBond.update(bondInfo);
-                            }
-                            break;
-                        case 'Triple':
-                            bondInfo = bondTable.getBondInformation(element1, element2, 'Single');
-                            selectedBond.update(bondInfo);
-                            break;
-                        default:
-                            addAlert(`${bondType} is not a supported bond type!`, 'error');
-                            break;
+
+                    const cycle = (bondTable, bond, element1, element2, bondType) => {
+                        const bondInfo = bondTable.getBondInformation(element1, element2, bondType);
+                        if (bondInfo) {
+                            bond.update(bondInfo);
+                            return true;
+                        }
+                        return false;
+                    };
+
+                    const bondTypes = bondTable.getBondTypes();
+                    if (!bondTypes.includes(bondType)) {
+                        addAlert(`${bondType} is not a supported bond type!`, 'error');
+                    } else {
+                        const nextBondType = bondTypes[(bondTypes.indexOf(bondType) + 1) % bondTypes.length];
+                        if (!cycle(bondTable, selectedBond, element1, element2, nextBondType)) {
+                            cycle(bondTable, selectedBond, element1, element2, 'Single');
+                        }
                     }
                 } catch(error) {
                     addAlert(error.message, 'error');
@@ -213,7 +206,7 @@ function MoleculeDrawingView({ solution }) {
                         const solutionCoords = getSolutionCoordinates(event.clientX, event.clientY);
                         const element = periodicTable.getElement(selectedElement);
         
-                        const hoveredAtom = new Atom([solutionCoords.x, solutionCoords.y, rng(-0.01, 0.01)],
+                        hoveredAtom = new Atom([solutionCoords.x, solutionCoords.y, rng(-0.01, 0.01)],
                             element.getSymbol(),
                             element.getAtomicNumber(),
                             element.getAtomicMass(),
@@ -229,10 +222,11 @@ function MoleculeDrawingView({ solution }) {
 
             const onScroll = (event) => {
                 event.preventDefault();
-                const scale = renderer.getScale() +
+                const scale = renderer.getScale();
+                const delta =
                     event.deltaY > 0 ? -0.05 : 
                     event.deltaY < 0 ? 0.05 : 0;
-                renderer.setScale(Math.max(scale, 0.1));
+                renderer.setScale(Math.max(scale + delta, 0.1));
             };
 
             const onMouseDown = async (event) => {
@@ -323,7 +317,11 @@ function MoleculeDrawingView({ solution }) {
                 window.removeEventListener('mouseup', onMouseUp);
             };
         }
-    }, [solution, renderer, selectedElement, selectedBondType, deleteEnabled, moveEnabled, anchorEnabled, colorEnabled, gridEnabled, addAlert]);
+    }, [solution, 
+        renderer, 
+        selectedElement, selectedBondType, 
+        deleteEnabled, moveEnabled, anchorEnabled, colorEnabled, gridEnabled, 
+        addAlert]);
 
     return <GraphicsContainer renderer={renderer}/>;
 }
