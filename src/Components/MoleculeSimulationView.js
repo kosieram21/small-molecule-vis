@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useAppContext } from '../AppContext';
 import ThreeDimensionalSolutionRenderer from '../Renderers/ThreeDimensionalSolutionRenderer';
+import simulationStep from '../Simulations/SimpleElectrostaticSpringSimulation';
 import GraphicsContainer from './GraphicsContainer';
 import { ArcballControls } from 'three/examples/jsm/controls/ArcballControls.js';
 
@@ -38,7 +39,7 @@ function MoleculeSimulationView({ solution }) {
 
         try {
           if (simulationEnabled) {
-            solution.simulationStep();
+            simulationStep(solution);
           }
           renderer.renderSolution(solution);
           controls.update();
